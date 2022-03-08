@@ -5,7 +5,8 @@
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status))
 
   (:require [clojure.tools.logging :as log]
-            [conductor-sdk.workers :as workers]))
+            [conductor-sdk.workers :as workers]
+            [conductor-sdk.metadata :as metadata]))
 
 (defn task-client
   "Returns an instance of TaskClient. when app-key and app-secret are provided
@@ -39,21 +40,49 @@
        (->> options (merge {:thread-count (count workers)}) :thread-count))
       (doto (.init))))
 
-(comment
-  (def worker
-    {
-     :name "clj_task"
-     :execute (fn [someData]
-                (println "This is imput data" (str someData))
-                [:completed {:message "Hi From Clj"}])
-     })
 
-  (def instance (runner-executor-for-workers
-                 (list worker)
-                 {
+(comment
+;; Given the options create-task and create-workflow
+(def options {
                   :url  "http://localhost:8080/api/"
                   :app-key "f082aa94-ba42-4f95-9d9f-c808b3fd7485"
                   :app-secret "JkSxYI8D8YIpcuNnSeBbPS9ug1rVPqii3Xia2nGRE1ICcepW"
-                  :thread-count 2} ))
-  (.shutdown instance)
-  )
+              } )
+;; Programatically Create a task
+(metadata/register-tasks options [{
+                         :name "cool_clj_task"
+                         :description "some description"
+                         :owner-email "jstuartmilne@gmail.com"
+                         :retry-count 3
+                         :timeout-seconds 300
+                                   :response-timeout-seconds 180 }])
+;; Programatically create a workflow
+(metadata/register-workflow-def options {
+                                              :name "cool_clj_workflow"
+                                              :description "created programatically from clj"
+                                              :version 1
+                                              :tasks [ {
+                                                       :name "cool_clj_task"
+                                                       :task-reference-name "cool_clj_task_ref"
+                                                       :input-parameters {}
+                                                       :type :simple
+                                                       } ]
+                                              :input-parameters []
+                                              :output-parameters {:message "${clj_prog_task_ref.output.:message}"}
+                                              :schema-version 2
+                                              :restartable true
+                                              :owner-email "jstuartmilne@yahoo.com"
+                                              :timeout-seconds 0
+                                         })
+
+;; Programatically create a worker and run it to pool
+(def instance (runner-executor-for-workers
+               (list {
+                      :name "cool_clj_task"
+                      :execute (fn [someData]
+                                 [:completed {:message "Hi From Clj i was created programatically"}])
+                      })
+               options ))
+(.shutdown instance)
+
+)
