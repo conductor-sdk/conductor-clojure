@@ -1,0 +1,21 @@
+{:paths ["src" "resources"]
+ :mvn/repos {"orkes" {:url "https://orkes-artifacts-repo.s3.amazonaws.com/releases" }}
+ :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+        com.netflix.conductor/conductor-client
+        {:mvn/version "3.4.0-SNAPSHOT" :exclusions [com.github.vmg.protogen/protogen-annotations com.google.guava/guava]}
+        com.netflix.conductor/conductor-common
+        {:mvn/version "3.4.0-SNAPSHOT" :exclusions [com.github.vmg.protogen/protogen-annotations com.google.guava/guava]}
+        com.google.guava/guava
+        {:mvn/version "31.0.1-jre"}
+        io.orkes.conductor/orkes-conductor-client {:mvn/version "0.0.1-SNAPSHOT"}
+        org.clojure/tools.logging {:mvn/version "1.1.0"}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.5"}
+        }
+ :aliases
+ {:build {:deps {io.github.seancorfield/build-clj
+                 {:git/tag "v0.6.4" :git/sha "c21cfde"}}
+          :ns-default build}
+  :test {:extra-paths ["test"]
+         :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
+                      io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.0" :git/sha "48c3c67"}}}}}
