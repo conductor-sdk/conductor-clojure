@@ -1,10 +1,12 @@
-(ns conductor-sdk.utils
+(ns conductor-sdk.workers
   (:import
    (com.netflix.conductor.client.worker Worker)
    (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)))
 
 
-(defn status->task-result-status [status]
+(defn status->task-result-status
+  "Maps a status key to a test result key"
+  [status]
   (case status
     :in-progress TaskResult$Status/IN_PROGRESS
     :failed TaskResult$Status/FAILED
