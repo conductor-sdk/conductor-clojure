@@ -1,12 +1,12 @@
-(ns conductor-sdk.conductor-clojure
+(ns conductor.client
   (:import (com.netflix.conductor.client.worker Worker)
            (io.orkes.conductor.client.http OrkesTaskClient)
            (com.netflix.conductor.client.automator TaskRunnerConfigurer$Builder)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status))
 
   (:require [clojure.tools.logging :as log]
-            [conductor-sdk.workers :as workers]
-            [conductor-sdk.metadata :as metadata]))
+            [conductor.workers :as workers]
+            [conductor.metadata :as metadata]))
 
 (defn task-client
   "Returns an instance of TaskClient. when app-key and app-secret are provided
@@ -45,8 +45,8 @@
 ;; Given the options create-task and create-workflow
 (def options {
                   :url  "http://localhost:8080/api/"
-                  :app-key "f082aa94-ba42-4f95-9d9f-c808b3fd7485"
-                  :app-secret "JkSxYI8D8YIpcuNnSeBbPS9ug1rVPqii3Xia2nGRE1ICcepW"
+                  :app-key "e544d3d7-7680-42c5-ae0a-2408d395533d"
+                  :app-secret "mYBkGm3RvWbRuFZlIShLyk8iu4IYxyhtxnrq0WEUWptqz8Id"
               } )
 ;; Programatically Create a task
 (metadata/register-tasks options [{

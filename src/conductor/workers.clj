@@ -1,4 +1,4 @@
-(ns conductor-sdk.workers
+(ns conductor.workers
   (:import
    (com.netflix.conductor.client.worker Worker)
    (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)))

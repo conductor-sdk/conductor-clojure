@@ -1,4 +1,4 @@
-(ns conductor-sdk.metadata
+(ns conductor.metadata
   (:import (com.netflix.conductor.client.http MetadataClient)
            (io.orkes.conductor.client.http OrkesMetadataClient)
            (com.netflix.conductor.common.metadata.tasks TaskDef)

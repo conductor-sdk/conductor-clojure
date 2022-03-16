@@ -1,6 +1,6 @@
-(ns conductor-sdk.conductor-clojure-test
+(ns conductor.conductor-clojure-test
   (:require [clojure.test :refer :all]
-            [conductor-sdk.conductor-clojure :refer :all]))
+            [conductor.client :refer :all]))
 
 (deftest a-test
   (testing "a passing test"
