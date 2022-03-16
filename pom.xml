@@ -1,10 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.github.conductor-sdk</groupId>
+  <groupId>io.orkes.conductor</groupId>
   <artifactId>conductor-clojure</artifactId>
   <version>0.1.0-SNAPSHOT</version>
-  <name>com.github.conductor-sdk/conductor-clojure</name>
+  <name>io.orkes.conductor.conductor-sdk/conductor-clojure</name>
   <description>FIXME: my new library.</description>
   <url>https://github.com/conductor-sdk/conductor-clojure</url>
   <licenses>
@@ -15,13 +18,15 @@
   </licenses>
   <developers>
     <developer>
-      <name>Jstuartmilne</name>
+      <name>Orkes</name>
     </developer>
   </developers>
   <scm>
     <url>https://github.com/conductor-sdk/conductor-clojure</url>
-    <connection>scm:git:git://github.com/conductor-sdk/conductor-clojure.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/conductor-sdk/conductor-clojure.git</developerConnection>
+    <connection>
+    scm:git:git://github.com/conductor-sdk/conductor-clojure.git</connection>
+    <developerConnection>
+    scm:git:ssh://git@github.com/conductor-sdk/conductor-clojure.git</developerConnection>
     <tag>v0.1.0-SNAPSHOT</tag>
   </scm>
   <dependencies>
@@ -41,7 +46,8 @@
     </repository>
     <repository>
       <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <url>
+      https://oss.sonatype.org/content/repositories/snapshots/</url>
     </repository>
   </repositories>
   <distributionManagement>
