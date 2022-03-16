@@ -52,7 +52,7 @@
 (metadata/register-tasks options [{
                          :name "cool_clj_task"
                          :description "some description"
-                         :owner-email "jstuartmilne@gmail.com"
+                         :owner-email "mail@gmail.com"
                          :retry-count 3
                          :timeout-seconds 300
                                    :response-timeout-seconds 180 }])
@@ -71,7 +71,7 @@
                                               :output-parameters {:message "${clj_prog_task_ref.output.:message}"}
                                               :schema-version 2
                                               :restartable true
-                                              :owner-email "jstuartmilne@yahoo.com"
+                                              :owner-email "mail@yahoo.com"
                                               :timeout-seconds 0
                                          })
 
