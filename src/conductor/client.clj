@@ -5,7 +5,7 @@
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status))
 
   (:require [clojure.tools.logging :as log]
-            [conductor.workers :as workers]
+            [conductor.mapper-utils :as mapperutils]
             [conductor.metadata :as metadata]))
 
 (defn task-client
@@ -36,7 +36,7 @@
   [workers options]
   (-> (task-client options)
       (task-runner-configurer
-       (map workers/clj-worker->Worker workers)
+       (map mapperutils/clj-worker->Worker workers)
        (->> options (merge {:thread-count (count workers)}) :thread-count))
       (doto (.init))))
 
@@ -50,7 +50,7 @@
               } )
 ;; Programatically Create a task
 (metadata/register-tasks options [{
-                         :name "cool_clj_task"
+                         :name "cool_clj_task_a"
                          :description "some description"
                          :owner-email "mail@gmail.com"
                          :retry-count 3
@@ -58,11 +58,11 @@
                                    :response-timeout-seconds 180 }])
 ;; Programatically create a workflow
 (metadata/register-workflow-def options {
-                                              :name "cool_clj_workflow"
+                                              :name "cool_clj_workflow_1"
                                               :description "created programatically from clj"
                                               :version 1
                                               :tasks [ {
-                                                       :name "cool_clj_task"
+                                                       :name "cool_clj_task_a"
                                                        :task-reference-name "cool_clj_task_ref"
                                                        :input-parameters {}
                                                        :type :simple
@@ -78,7 +78,7 @@
 ;; Programatically create a worker and run it to pool
 (def instance (runner-executor-for-workers
                (list {
-                      :name "cool_clj_task"
+                      :name "cool_clj_task_a"
                       :execute (fn [someData]
                                  [:completed {:message "Hi From Clj i was created programatically"}])
                       })
