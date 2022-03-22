@@ -16,8 +16,7 @@
     (.setRootURI client url)
     (when app-key
       (.withCredentials client app-key app-secret)
-      (log/debug "Creating client with authentication")
-      )
+      (log/debug "Creating client with authentication"))
     client))
 
 
@@ -50,19 +49,19 @@
               } )
 ;; Programatically Create a task
 (metadata/register-tasks options [{
-                         :name "cool_clj_task_a"
+                         :name "cool_clj_task_b"
                          :description "some description"
                          :owner-email "mail@gmail.com"
                          :retry-count 3
                          :timeout-seconds 300
-                                   :response-timeout-seconds 180 }])
+                         :response-timeout-seconds 180 }])
 ;; Programatically create a workflow
 (metadata/register-workflow-def options {
-                                              :name "cool_clj_workflow_1"
+                                              :name "cool_clj_workflow_2"
                                               :description "created programatically from clj"
                                               :version 1
                                               :tasks [ {
-                                                       :name "cool_clj_task_a"
+                                                       :name "cool_clj_task_b"
                                                        :task-reference-name "cool_clj_task_ref"
                                                        :input-parameters {}
                                                        :type :simple
@@ -73,12 +72,13 @@
                                               :restartable true
                                               :owner-email "mail@yahoo.com"
                                               :timeout-seconds 0
+                                              :timeout-policy :alert-only
                                          })
 
 ;; Programatically create a worker and run it to pool
 (def instance (runner-executor-for-workers
                (list {
-                      :name "cool_clj_task_a"
+                      :name "cool_clj_task_b"
                       :execute (fn [someData]
                                  [:completed {:message "Hi From Clj i was created programatically"}])
                       })

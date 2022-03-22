@@ -3,7 +3,7 @@
            (io.orkes.conductor.client.http OrkesMetadataClient)
            (com.netflix.conductor.common.metadata.tasks TaskDef)
            (com.netflix.conductor.common.metadata.tasks TaskType)
-           (com.netflix.conductor.common.metadata.workflow WorkflowDef)
+           (com.netflix.conductor.common.metadata.workflow WorkflowDef WorkflowDef$TimeoutPolicy)
            (com.netflix.conductor.common.metadata.workflow WorkflowTask)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
            (com.netflix.conductor.client.worker Worker)))
@@ -12,27 +12,28 @@
   (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
 
 (defn clj-task-type->TaskType [type]
-  (case type
-    :simple (.name TaskType/SIMPLE )
-    :dynamic (.name TaskType/DYNAMIC )
-    :fork-join (.name TaskType/FORK_JOIN )
-    :fork-join-dynamic (.name TaskType/FORK_JOIN_DYNAMIC )
-    :decision (.name TaskType/DECISION )
-    :switch (.name TaskType/SWITCH )
-    :join (.name TaskType/JOIN )
-    :do-while (.name TaskType/DO_WHILE )
-    :sub-workflow (.name TaskType/SUB_WORKFLOW )
-    :event (.name TaskType/EVENT )
-    :wait (.name TaskType/WAIT )
-    :user-defined (.name TaskType/USER_DEFINED )
-    :http (.name TaskType/HTTP )
-    :lambda (.name TaskType/LAMBDA )
-    :inline (.name TaskType/INLINE )
-    :exclusive-join (.name TaskType/EXCLUSIVE_JOIN )
-    :terminate (.name TaskType/TERMINATE )
-    :kafka-publish (.name TaskType/KAFKA_PUBLISH )
-    :json-jq-transform (.name TaskType/JSON_JQ_TRANSFORM )
-    :set-variable (.name TaskType/SET_VARIABLE)) )
+  (.name (case type
+    :simple TaskType/SIMPLE
+    :dynamic TaskType/DYNAMIC
+    :fork-join TaskType/FORK_JOIN
+    :fork-join-dynamic TaskType/FORK_JOIN_DYNAMIC
+    :decision TaskType/DECISION
+    :switch TaskType/SWITCH
+    :join TaskType/JOIN
+    :do-while TaskType/DO_WHILE
+    :sub-workflow TaskType/SUB_WORKFLOW
+    :event TaskType/EVENT
+    :wait TaskType/WAIT
+    :user-defined TaskType/USER_DEFINED
+    :http TaskType/HTTP
+    :lambda TaskType/LAMBDA
+    :inline TaskType/INLINE
+    :exclusive-join TaskType/EXCLUSIVE_JOIN
+    :terminate TaskType/TERMINATE
+    :kafka-publish TaskType/KAFKA_PUBLISH
+    :json-jq-transform TaskType/JSON_JQ_TRANSFORM
+    :set-variable TaskType/SET_VARIABLE
+    (throw (Exception. (str "Type " type "cant be mapped. Did you misspell?")))) ) )
 
 (defn clj-workflow-task->WorkflowTask [{:keys [name task-reference-name description input-parameters type]}]
   (doto (WorkflowTask.)
@@ -42,10 +43,17 @@
     (.setInputParameters input-parameters)
     (.setType (clj-task-type->TaskType type))))
 
+(defn timeout-policy->TimeoutPolicy [timeout-policy]
+  [timeout-policy]
+  (case timeout-policy
+    :time-out-wf WorkflowDef$TimeoutPolicy/TIME_OUT_WF
+    :alert-only WorkflowDef$TimeoutPolicy/ALERT_ONLY
+    (throw (Exception. (str "timeout-policy" type "cant be mapped. Did you misspell?")))))
+
 (defn clj-workflow->WorkflowDef
   [{:keys [name description version tasks
            input-parameters output-parameters schema-version
-           restartable owner-email timeout-policy timeout-seconds] :or {restartable true}}]
+           restartable owner-email timeout-policy timeout-seconds] :or {restartable true, timeout-policy :alert-only }}]
   (doto (WorkflowDef.)
     (.setName name)
     (.setDescription description)
@@ -56,7 +64,7 @@
     (.setSchemaVersion schema-version)
     (.setRestartable restartable)
     (.setOwnerEmail owner-email)
-    ;; (.setTimeoutPolicy timeout-policy)
+    (.setTimeoutPolicy (timeout-policy->TimeoutPolicy timeout-policy))
     (.setTimeoutSeconds timeout-seconds)))
 
 (defn status->task-result-status
@@ -81,6 +89,4 @@
             [result-status result-output-data] (executor-fn input-data)]
         (.setStatus task-result (status->task-result-status result-status))
         (.setOutputData task-result result-output-data)
-        task-result
-        )
-      )))
+        task-result))))
