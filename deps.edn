@@ -1,12 +1,10 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.3"}
-        com.netflix.conductor/conductor-client
-        {:mvn/version "3.5.0" :exclusions [com.github.vmg.protogen/protogen-annotations com.google.guava/guava]}
         com.netflix.conductor/conductor-common
         {:mvn/version "3.5.0" :exclusions [com.github.vmg.protogen/protogen-annotations com.google.guava/guava]}
         com.google.guava/guava
         {:mvn/version "31.0.1-jre"}
-        io.orkes.conductor/orkes-conductor-client {:mvn/version "0.1.4"}
+        io.orkes.conductor/orkes-conductor-client {:mvn/version "0.1.4" :exclusions [com.github.vmg.protogen/protogen-annotations com.google.guava/guava]}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         ;; ch.qos.logback/logback-classic {:mvn/version "1.2.5"}
         }
