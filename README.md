@@ -51,7 +51,7 @@ Software Development Kit for Netflix Conductor, written on and providing support
                                               :output-parameters {:message "${clj_prog_task_ref.output.:message}"}
                                               :schema-version 2
                                               :restartable true
-                                              :owner-email "jstuartmilne@yahoo.com"
+                                              :owner-email "owner@yahoo.com"
                                               :timeout-seconds 0
                                          }))
 
