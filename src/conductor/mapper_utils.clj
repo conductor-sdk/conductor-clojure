@@ -8,6 +8,29 @@
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
            (com.netflix.conductor.client.worker Worker)))
 
+(defprotocol MapToClojure
+  (->clj [o]))
+
+(extend-protocol MapToClojure
+  java.util.Map
+  (->clj [o] (let [entries (.entrySet o)]
+               (reduce (fn [m [^String k v]]
+                         (assoc m (keyword k) (->clj v)))
+                       {} entries)))
+
+  java.util.List
+  (->clj [o] (vec (map ->clj o)))
+
+  java.lang.Object
+  (->clj [o] o)
+
+  nil
+  (->clj [_] nil))
+
+(defn java-map->clj-map
+  [m]
+  (->clj m))
+
 (defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
   (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
 
@@ -33,15 +56,33 @@
     :kafka-publish TaskType/KAFKA_PUBLISH
     :json-jq-transform TaskType/JSON_JQ_TRANSFORM
     :set-variable TaskType/SET_VARIABLE
-    (throw (Exception. (str "Type " type "cant be mapped. Did you misspell?")))) ) )
+    nil TaskType/SIMPLE
+    (throw (Exception. (str "Type " (name type) " cant be mapped. Did you misspell?")))) ) )
 
-(defn clj-workflow-task->WorkflowTask [{:keys [name task-reference-name description input-parameters type]}]
+(defn clj-workflow-task->WorkflowTask [{:keys [
+                                               name task-reference-name description
+                                               input-parameters type fork-tasks join-on
+                                               decision-cases default-case loop-condition
+                                               loop-over dynamic-fork-tasks-input-param-name dynamic-fork-tasks-param
+                                               dynamic-task-name-param async-complete
+                                               ]}]
   (doto (WorkflowTask.)
     (.setName name)
     (.setTaskReferenceName task-reference-name)
     (.setDescription description)
     (.setInputParameters input-parameters)
-    (.setType (clj-task-type->TaskType type))))
+    (.setType (clj-task-type->TaskType type))
+    (#(when fork-tasks (.setForkTasks % (map (fn [inner] (map clj-workflow-task->WorkflowTask inner)) fork-tasks))))
+    (#(when join-on (.setJoinOn % join-on)))
+    (#(when decision-cases (.setDecisionCases % (update-vals decision-cases (fn [dtasks] (map clj-workflow-task->WorkflowTask dtasks))))))
+    (#(when default-case (.setDefaultCase % (map clj-workflow-task->WorkflowTask default-case))))
+    (#(when loop-condition (.setLoopCondition % loop-condition)))
+    (#(when loop-over (.setLoopOver % loop-over)))
+    (#(when dynamic-fork-tasks-input-param-name (.setDynamicForkTasksInputParamName % dynamic-fork-tasks-input-param-name)))
+    (#(when dynamic-fork-tasks-param (.setDynamicForkTasksParam % dynamic-fork-tasks-param)))
+    (#(when dynamic-task-name-param (.setDynamicTaskNameParam % dynamic-task-name-param)))
+    (#(when async-complete (.setAsyncComplete % async-complete)))
+    ))
 
 (defn timeout-policy->TimeoutPolicy [timeout-policy]
   [timeout-policy]
@@ -65,7 +106,8 @@
     (.setRestartable restartable)
     (.setOwnerEmail owner-email)
     (.setTimeoutPolicy (timeout-policy->TimeoutPolicy timeout-policy))
-    (.setTimeoutSeconds timeout-seconds)))
+    (.setTimeoutSeconds timeout-seconds))
+  )
 
 (defn status->task-result-status
   "Maps a status key to a test result key"
