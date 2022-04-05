@@ -64,7 +64,7 @@
                                                input-parameters type fork-tasks join-on
                                                decision-cases default-case loop-condition
                                                loop-over dynamic-fork-tasks-input-param-name dynamic-fork-tasks-param
-                                               dynamic-task-name-param async-complete
+                                               dynamic-task-name-param async-complete case-value-param
                                                ]}]
   (doto (WorkflowTask.)
     (.setName name)
@@ -77,11 +77,12 @@
     (#(when decision-cases (.setDecisionCases % (update-vals decision-cases (fn [dtasks] (map clj-workflow-task->WorkflowTask dtasks))))))
     (#(when default-case (.setDefaultCase % (map clj-workflow-task->WorkflowTask default-case))))
     (#(when loop-condition (.setLoopCondition % loop-condition)))
-    (#(when loop-over (.setLoopOver % loop-over)))
+    (#(when loop-over (.setLoopOver % (map clj-workflow-task->WorkflowTask loop-over))))
     (#(when dynamic-fork-tasks-input-param-name (.setDynamicForkTasksInputParamName % dynamic-fork-tasks-input-param-name)))
     (#(when dynamic-fork-tasks-param (.setDynamicForkTasksParam % dynamic-fork-tasks-param)))
     (#(when dynamic-task-name-param (.setDynamicTaskNameParam % dynamic-task-name-param)))
     (#(when async-complete (.setAsyncComplete % async-complete)))
+    (#(when case-value-param (.setCaseValueParam % case-value-param)))
     ))
 
 (defn timeout-policy->TimeoutPolicy [timeout-policy]
