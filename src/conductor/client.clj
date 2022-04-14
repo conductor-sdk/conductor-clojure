@@ -1,6 +1,18 @@
+
+;;/*
+;; * <p>
+;; * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+;; * the License. You may obtain a copy of the License at
+;; * <p>
+;; * http://www.apache.org/licenses/LICENSE-2.0
+;; * <p>
+;; * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+;; * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+;; * specific language governing permissions and limitations under the License.
+;; */
 (ns conductor.client
   (:import (com.netflix.conductor.client.worker Worker)
-           (io.orkes.conductor.client.http OrkesTaskClient)
+           (io.orkes.conductor.client.http OrkesTaskClient OrkesWorkflowClient)
            (com.netflix.conductor.client.automator TaskRunnerConfigurer$Builder)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status))
 
@@ -11,8 +23,19 @@
 (defn task-client
   "Returns an instance of TaskClient. when app-key and app-secret are provided
   Then returned instance will be Orkes Compatible"
-  [{:keys [app-key app-secret url] :or {url "http://localhost:8080/api"}} ]
+  [{:keys [app-key app-secret url] :or {url "http://localhost:8080/api/"}} ]
   (let [client (OrkesTaskClient. )]
+    (.setRootURI client url)
+    (when app-key
+      (.withCredentials client app-key app-secret)
+      (log/debug "Creating client with authentication"))
+    client))
+
+(defn workflow-client
+  "Returns an instance of TaskClient. when app-key and app-secret are provided
+  Then returned instance will be Orkes Compatible"
+  [{:keys [app-key app-secret url] :or {url "http://localhost:8080/api/"}} ]
+  (let [client (OrkesWorkflowClient. )]
     (.setRootURI client url)
     (when app-key
       (.withCredentials client app-key app-secret)
@@ -38,3 +61,16 @@
        (map mapperutils/clj-worker->Worker workers)
        (->> options (merge {:thread-count (count workers)}) :thread-count))
       (doto (.init))))
+
+(defn start-workflow-with-client
+  "Takes a client and a start-request map, and starts a workflow"
+  [client start-request]
+  (.startWorkflow client (mapperutils/clj-start-workflow-request->StartWorkflowRequest start-request)))
+
+
+(defn start-workflow
+  "Takes a an option map and a start-request map and starts a workflow.
+  Returns the id of a workflow execution"
+  [options start-request]
+  (-> (workflow-client options)
+      (start-workflow-with-client start-request)))

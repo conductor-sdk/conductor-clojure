@@ -1,12 +1,28 @@
+;;/*
+;; * <p>
+;; * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+;; * the License. You may obtain a copy of the License at
+;; * <p>
+;; * http://www.apache.org/licenses/LICENSE-2.0
+;; * <p>
+;; * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+;; * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+;; * specific language governing permissions and limitations under the License.
+;; */
 (ns conductor.mapper-utils
-(:import (com.netflix.conductor.client.http MetadataClient)
+  (:import (com.netflix.conductor.client.http MetadataClient)
            (io.orkes.conductor.client.http OrkesMetadataClient)
            (com.netflix.conductor.common.metadata.tasks TaskDef)
            (com.netflix.conductor.common.metadata.tasks TaskType)
-           (com.netflix.conductor.common.metadata.workflow WorkflowDef WorkflowDef$TimeoutPolicy)
-           (com.netflix.conductor.common.metadata.workflow WorkflowTask)
+           (com.netflix.conductor.common.metadata.workflow
+            WorkflowTask
+            WorkflowDef
+            WorkflowDef$TimeoutPolicy
+            StartWorkflowRequest)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
-           (com.netflix.conductor.client.worker Worker)))
+           (com.netflix.conductor.client.worker Worker))
+  (:require [clojure.string :as string])
+  )
 
 (defprotocol MapToClojure
   (->clj [o]))
@@ -30,6 +46,7 @@
 (defn java-map->clj-map
   [m]
   (->clj m))
+
 
 (defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
   (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
@@ -133,3 +150,18 @@
         (.setStatus task-result (status->task-result-status result-status))
         (.setOutputData task-result result-output-data)
         task-result))))
+
+(defn clj-start-workflow-request->StartWorkflowRequest
+  "Returns a Start workflow request"
+  [{:keys [name version correlation-id external-input-payload-storage-path
+                                                                priority input task-domain workflow-def]}]
+  (doto (StartWorkflowRequest.)
+    (.setName name)
+    (#(when version (.setVersion % (int version))))
+    (#(when correlation-id (.setCorrelationId % correlation-id)))
+    (#(when external-input-payload-storage-path (.setExternalInputPayloadStoragePath % external-input-payload-storage-path)))
+    (#(when priority (.setPriority % priority)))
+    (#(when input (.setInput % input)))
+    (#(when task-domain (.setTaskDomain % task-domain)))
+    (#(when workflow-def (.setWorkflowDef % (clj-workflow->WorkflowDef workflow-def))))
+    ))
