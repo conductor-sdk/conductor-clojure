@@ -4,7 +4,7 @@
             [org.corfield.build :as bb]))
 
 (def lib 'io.orkes/conductor-clojure)
-(def version "orkes-0.1.3-SNAPSHOT")
+(def version "orkes-0.1.3")
 #_ ; alternatively, use MAJOR.MINOR.COMMITS:
 (def version (format "1.0.%s" (b/git-count-revs nil)))
 

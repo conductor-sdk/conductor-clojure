@@ -199,7 +199,7 @@ Current supported task types :
 If no task type is specified it will default to :simple
 
 ## Client namespace
-The client namespace holds the function to start a wrokflow and running a worker
+The client namespace holds the function to start a workflow and running a worker
 
 `[conductor.client :as conductor]`
  
