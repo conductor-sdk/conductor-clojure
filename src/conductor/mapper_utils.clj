@@ -19,10 +19,21 @@
             WorkflowDef
             WorkflowDef$TimeoutPolicy
             StartWorkflowRequest)
+           (com.netflix.conductor.common.run Workflow)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
            (com.netflix.conductor.client.worker Worker))
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [clojure.java.data :as j]
+            [clojure.walk :as w])
   )
+
+(defn camel->kebab [k]
+  (->> (string/split (name k) #"(?<=[a-z])(?=[A-Z])")
+       (map string/lower-case)
+       (interpose \-)
+       string/join
+       keyword))
+
 
 (defprotocol MapToClojure
   (->clj [o]))
@@ -40,12 +51,26 @@
   java.lang.Object
   (->clj [o] o)
 
-  nil
-  (->clj [_] nil))
+  com.netflix.conductor.common.run.Workflow
+  (->clj [o] (w/postwalk
+              (fn [s] (if (keyword? s)(camel->kebab s)s))
+              (j/from-java-deep o {:exceptions {:return true}}) ))
 
-(defn java-map->clj-map
+  nil
+  (->clj [_] nil)
+
+  )
+
+
+(defn java-map->clj
   [m]
   (->clj m))
+
+
+(comment
+(j/to-java StartWorkflowRequest {:version 1})
+)
+
 
 
 (defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
