@@ -73,3 +73,29 @@
   [options start-request]
   (-> (workflow-client options)
       (start-workflow-with-client start-request)))
+
+(defn get-workflow-with-client
+  ([client workflowId] (.getWorkflow client workflowId true))
+  ([client workflowId include-tasks] (.getWorkflow client workflowId include-tasks)))
+
+(defn get-workflow [options & args]
+  (let [client-inst (workflow-client options)]
+    (mapperutils/Workflow->clj (apply get-workflow-with-client client-inst args) )
+    ))
+
+(comment
+(def options {
+              :app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d"
+              :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean"
+              :url "http://localhost:8080/api/"
+              })
+
+(def client
+(workflow-client options)
+  )
+(.getWorkflow client  "8542dfe4-259b-4e65-99ca-4116a020524d" false)
+(mapperutils/Workflow->clj (get-workflow-with-client client "8542dfe4-259b-4e65-99ca-4116a020524d") )
+(get-workflow options "8542dfe4-259b-4e65-99ca-4116a020524d" )
+
+
+  )
