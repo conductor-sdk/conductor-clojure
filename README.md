@@ -196,7 +196,6 @@ Current supported task types :
 :json-jq-transform
 :set-variable
 ```
-If no task type is specified it will default to :simple
 
 ## Client namespace
 The client namespace holds the function to start a workflow and running a worker
