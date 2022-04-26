@@ -22,10 +22,10 @@
            (com.netflix.conductor.common.run Workflow)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
            (com.netflix.conductor.client.worker Worker))
+
   (:require [clojure.string :as string]
             [clojure.java.data :as j]
-            [clojure.walk :as w])
-  )
+            [clojure.walk :as w]))
 
 (defn camel->kebab [k]
   (->> (string/split (name k) #"(?<=[a-z])(?=[A-Z])")
@@ -34,6 +34,14 @@
        string/join
        keyword))
 
+(defn kebab->capitalizedash [w]
+  (-> (string/upper-case w)
+       (string/replace #"-" "_")))
+
+(defn kebab-all-map-keys [o]
+  (w/postwalk
+              (fn [s] (if (keyword? s)(camel->kebab s)s))
+              (j/from-java-deep o {:exceptions {:return true}}) ))
 
 (defprotocol MapToClojure
   (->clj [o]))
@@ -52,54 +60,38 @@
   (->clj [o] o)
 
   com.netflix.conductor.common.run.Workflow
-  (->clj [o] (w/postwalk
-              (fn [s] (if (keyword? s)(camel->kebab s)s))
-              (j/from-java-deep o {:exceptions {:return true}}) ))
+  (->clj [o] (kebab-all-map-keys o))
+
+  com.netflix.conductor.common.metadata.tasks.TaskDef
+  (->clj [o] (kebab-all-map-keys o))
+
+  com.netflix.conductor.common.metadata.workflow.WorkflowDef
+  (->clj [o](kebab-all-map-keys o))
 
   nil
-  (->clj [_] nil)
-
-  )
-
+  (->clj [_] nil))
 
 (defn java-map->clj
   [m]
   (->clj m))
 
 
-(comment
-(j/to-java StartWorkflowRequest {:version 1})
-)
-
-
-
 (defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
   (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
 
+
+(defprotocol TaskTypeEnum
+  (->task-type [tp] ))
+
+(extend-protocol TaskTypeEnum
+  String
+  (->task-type [tp] (TaskType/valueOf tp) )
+  clojure.lang.Keyword
+  (->task-type [tp] (->task-type (kebab->capitalizedash (name tp)))))
+
+
 (defn clj-task-type->TaskType [type]
-  (.name (case type
-    :simple TaskType/SIMPLE
-    :dynamic TaskType/DYNAMIC
-    :fork-join TaskType/FORK_JOIN
-    :fork-join-dynamic TaskType/FORK_JOIN_DYNAMIC
-    :decision TaskType/DECISION
-    :switch TaskType/SWITCH
-    :join TaskType/JOIN
-    :do-while TaskType/DO_WHILE
-    :sub-workflow TaskType/SUB_WORKFLOW
-    :event TaskType/EVENT
-    :wait TaskType/WAIT
-    :user-defined TaskType/USER_DEFINED
-    :http TaskType/HTTP
-    :lambda TaskType/LAMBDA
-    :inline TaskType/INLINE
-    :exclusive-join TaskType/EXCLUSIVE_JOIN
-    :terminate TaskType/TERMINATE
-    :kafka-publish TaskType/KAFKA_PUBLISH
-    :json-jq-transform TaskType/JSON_JQ_TRANSFORM
-    :set-variable TaskType/SET_VARIABLE
-    nil TaskType/SIMPLE
-    (throw (Exception. (str "Type " (name type) " cant be mapped. Did you misspell?")))) ) )
+(->task-type type))
 
 (defn clj-workflow-task->WorkflowTask [{:keys [
                                                name task-reference-name description
@@ -113,7 +105,7 @@
     (.setTaskReferenceName task-reference-name)
     (.setDescription description)
     (.setInputParameters input-parameters)
-    (.setType (clj-task-type->TaskType type))
+    (.setType (.name (clj-task-type->TaskType type) ))
     (#(when fork-tasks (.setForkTasks % (map (fn [inner] (map clj-workflow-task->WorkflowTask inner)) fork-tasks))))
     (#(when join-on (.setJoinOn % join-on)))
     (#(when decision-cases (.setDecisionCases % (update-vals decision-cases (fn [dtasks] (map clj-workflow-task->WorkflowTask dtasks))))))
@@ -124,15 +116,27 @@
     (#(when dynamic-fork-tasks-param (.setDynamicForkTasksParam % dynamic-fork-tasks-param)))
     (#(when dynamic-task-name-param (.setDynamicTaskNameParam % dynamic-task-name-param)))
     (#(when async-complete (.setAsyncComplete % async-complete)))
-    (#(when case-value-param (.setCaseValueParam % case-value-param)))
-    ))
+    (#(when case-value-param (.setCaseValueParam % case-value-param)))))
+
+(defprotocol TimeoutPolicy
+  (->timeout-policy [tp] ))
+
+(extend-protocol TimeoutPolicy
+  String
+  (->timeout-policy [tp] (WorkflowDef$TimeoutPolicy/valueOf tp) )
+  clojure.lang.Keyword
+  (->timeout-policy [tp] (->timeout-policy (kebab->capitalizedash (name tp)))))
+
 
 (defn timeout-policy->TimeoutPolicy [timeout-policy]
-  [timeout-policy]
-  (case timeout-policy
-    :time-out-wf WorkflowDef$TimeoutPolicy/TIME_OUT_WF
-    :alert-only WorkflowDef$TimeoutPolicy/ALERT_ONLY
-    (throw (Exception. (str "timeout-policy" type "cant be mapped. Did you misspell?")))))
+  (->timeout-policy timeout-policy))
+
+(comment
+(timeout-policy->TimeoutPolicy "TIME_OUT_WF")
+(timeout-policy->TimeoutPolicy :time-out-wf)
+( WorkflowDef$TimeoutPolicy/valueOf "TIME_OUT_WF" )
+
+  )
 
 (defn clj-workflow->WorkflowDef
   [{:keys [name description version tasks
@@ -152,14 +156,21 @@
     (.setTimeoutSeconds timeout-seconds))
   )
 
-(defn status->task-result-status
-  "Maps a status key to a test result key"
-  [status]
-  (case status
-    :in-progress TaskResult$Status/IN_PROGRESS
-    :failed TaskResult$Status/FAILED
-    :failed-with-terminal-error TaskResult$Status/FAILED_WITH_TERMINAL_ERROR
-    :completed TaskResult$Status/COMPLETED))
+(defprotocol TaskResultStatus
+  (->task-result-status [trs]))
+(extend-protocol TaskResultStatus
+  String
+  (->task-result-status [tp] (TaskResult$Status/valueOf tp) )
+  clojure.lang.Keyword
+  (->task-result-status [tp] (->task-result-status (kebab->capitalizedash (name tp))))
+  )
+
+(defn status->task-result-status [s] (->task-result-status s))
+
+(comment
+(status->task-result-status :in-progress)
+  )
+
 
 (defn clj-worker->Worker
   "Returns a Worker instance for a worker provided in the form of a map"
