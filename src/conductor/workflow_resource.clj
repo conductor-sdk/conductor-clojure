@@ -1,3 +1,14 @@
+;;/*
+;; * <p>
+;; * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+;; * the License. You may obtain a copy of the License at
+;; * <p>
+;; * http://www.apache.org/licenses/LICENSE-2.0
+;; * <p>
+;; * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+;; * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+;; * specific language governing permissions and limitations under the License.
+;; */
 (ns conductor.workflow-resource
   (:import
    (io.orkes.conductor.client.http OrkesWorkflowClient))
@@ -36,6 +47,17 @@
 (defn get-workflow [options & args]
   (let [client-inst (workflow-client options)]
     (mapperutils/java-map->clj (apply get-workflow-with-client client-inst args))))
+
+(defn terminate-workflow-with-client
+  "Takes a client a workflow-id and an optional reason. will terminate a running workflow"
+  ([client workflow-id reason] (.terminateWorkflow client workflow-id reason))
+  ([client workflow-id] (.terminateWorkflow client workflow-id nil)))
+
+(defn terminate-workflow
+  "Terminates a running workflow. given an id and an optional reason"
+  [options workflow-id & args]
+(-> (workflow-client options)
+    ( #(apply terminate-workflow-with-client % workflow-id args) )))
 
 (comment
 (def options {
