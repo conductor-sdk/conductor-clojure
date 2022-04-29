@@ -10,16 +10,15 @@
 ;; * specific language governing permissions and limitations under the License.
 ;; */
 (ns conductor.mapper-utils
-  (:import (com.netflix.conductor.client.http MetadataClient)
-           (io.orkes.conductor.client.http OrkesMetadataClient)
+  (:import
            (com.netflix.conductor.common.metadata.tasks TaskDef)
            (com.netflix.conductor.common.metadata.tasks TaskType)
            (com.netflix.conductor.common.metadata.workflow
             WorkflowTask
             WorkflowDef
             WorkflowDef$TimeoutPolicy
-            StartWorkflowRequest)
-           (com.netflix.conductor.common.run Workflow)
+            StartWorkflowRequest
+            RerunWorkflowRequest)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
            (com.netflix.conductor.client.worker Worker))
 
@@ -33,6 +32,11 @@
        (interpose \-)
        string/join
        keyword))
+
+(defn kebab->camel [k]
+  (keyword (string/replace (name k) #"-(\w)"
+                          #(string/upper-case (second %1))) ))
+
 
 (defn kebab->capitalizedash [w]
   (-> (string/upper-case w)
@@ -66,6 +70,15 @@
   (->clj [o] (kebab-all-map-keys o))
 
   com.netflix.conductor.common.metadata.workflow.WorkflowDef
+  (->clj [o](kebab-all-map-keys o))
+
+  com.netflix.conductor.common.model.BulkResponse
+  (->clj [o](kebab-all-map-keys o))
+
+  com.netflix.conductor.common.run.WorkflowSummary
+  (->clj [o](kebab-all-map-keys o))
+
+  com.netflix.conductor.common.run.SearchResult
   (->clj [o](kebab-all-map-keys o))
 
   nil
@@ -167,18 +180,13 @@
 
 (defn status->task-result-status [s] (->task-result-status s))
 
-(comment
-(status->task-result-status :in-progress)
-  )
-
-
 (defn clj-worker->Worker
   "Returns a Worker instance for a worker provided in the form of a map"
   [worker]
   (reify Worker
-    (getTaskDefName [this]
+    (getTaskDefName [__]
       (str (:name worker)))
-    (execute [this task]
+    (execute [__ task]
       (let [task-result (TaskResult. task)
             input-data (.getInputData task)
             executor-fn (:execute worker)
@@ -199,5 +207,12 @@
     (#(when priority (.setPriority % priority)))
     (#(when input (.setInput % input)))
     (#(when task-domain (.setTaskDomain % task-domain)))
-    (#(when workflow-def (.setWorkflowDef % (clj-workflow->WorkflowDef workflow-def))))
-    ))
+    (#(when workflow-def (.setWorkflowDef % (clj-workflow->WorkflowDef workflow-def))))))
+
+(defn clj-rerun-workflow-request->RerunWorkflowRequest [rerun-workflow-request]
+  (-> (j/to-java RerunWorkflowRequest (update-keys rerun-workflow-request kebab->camel))))
+
+
+;; (comment
+;; (.getReRunFromWorkflowId (clj-rerun-workflow-request->RerunWorkflowRequest {:workflow-input {} :re-run-from-workflow-id "someId"}) )
+;;   )

@@ -310,24 +310,83 @@
                                                         :timeout-seconds 0
                                                         :timeout-policy :alert-only
                                                         })
+
 (def instance (runner-executor-for-workers [{:name "cool_clj_task_z"
                                              :execute (fn [d]
-                                                        (Thread/sleep 5000)
+                                                        (Thread/sleep 15000)
                                                         [:completed {"message" "Something silly"}]
                                                         )
                                              }
                                             {:name "cool_clj_task_x"
                                              :execute (fn [d]
-                                                        (Thread/sleep 5000)
+                                                        (Thread/sleep 15000)
                                                         [:completed {"message" "Something silly 2"}]
                                                         )
                                              }
                                             ] options))
   (.shutdown instance)
 
-  (def wf-id (wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait"}) )
+  (def wf-id (wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait" :correlation-id "super-cool"}) )
 
   (wresource/terminate-workflow options wf-id)
 
+  (wresource/get-workflows options "wf_to_wait" "super-cool" :include-closed true :include-tasks true)
+
+  (wresource/delete-workflow options "bbb9d385-04f1-4e5d-8c28-24c5c616e2fe")
+
+
+    (wresource/terminate-workflows options  (repeatedly 5 #(wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait" :correlation-id "super-cool"})))
+
+  (repeatedly 5 #(wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait" :correlation-id "super-cool"}))
+
+  (wresource/get-running-workflow options "wf_to_wait" 1)
+
+  (wresource/get-workflow-by-time-period options "wf_to_wait" 1 1648518013000 1651196413000)
+
+  (wresource/pause-workflow options wf-id)
+
+  (wresource/resume-workflow options wf-id)
+(metadata/register-workflow-def options {
+                                                        :name "wf_to_wait_long"
+                                                        :description "created programatically from clj"
+                                                        :version 1
+                                                        :tasks [ {
+                                                                                :name "cool_clj_task_z"
+                                                                                :task-reference-name "cool_clj_task_z_ref"
+                                                                                :input-parameters {}
+                                                                                :type :simple
+                                                                  },
+                                                                {
+                                                                                :name "cool_clj_task_x"
+                                                                                :task-reference-name "cool_clj_task_x_ref"
+                                                                                :input-parameters {}
+                                                                                :type :simple
+                                                                                }
+{
+                                                                                :name "cool_clj_task_x"
+                                                                                :task-reference-name "cool_clj_task_c_ref"
+                                                                                :input-parameters {}
+                                                                                :type :simple
+                                                                                }
+{
+                                                                                :name "cool_clj_task_x"
+                                                                                :task-reference-name "cool_clj_task_b_ref"
+                                                                                :input-parameters {}
+                                                                                :type :simple
+                                                                                }
+                                                                ]
+                                                        :input-parameters []
+                                                        :output-parameters { "message" "${cool_clj_task_x_ref.output.message}"}
+                                                        :schema-version 2
+                                                        :restartable true
+                                                        :owner-email "mail@yahoo.com"
+                                                        :timeout-seconds 0
+                                                        :timeout-policy :alert-only
+                                                        })
+
+    (def wf-id-long (wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait_long" :correlation-id "super-cool"}) )
+    (wresource/skip-task-from-workflow options wf-id-long "cool_clj_task_c_ref")
+    (wresource/rerun-workflow options wf-id-long { :workflow-input {} :re-run-from-task-id "19b37b92-2e75-4c7c-81e5-25f978ebb1e7" :correlation-id "super-cool"})
+    (wresource/retry-last-failed-task options "d212a1d0-293f-4ab9-9359-be33fff8d94d")
 
   )
