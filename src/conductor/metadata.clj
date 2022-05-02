@@ -10,12 +10,7 @@
 ;; * specific language governing permissions and limitations under the License.
 ;; */
 (ns conductor.metadata
-  (:import (com.netflix.conductor.client.http MetadataClient)
-           (io.orkes.conductor.client.http OrkesMetadataClient)
-           (com.netflix.conductor.common.metadata.tasks TaskDef)
-           (com.netflix.conductor.common.metadata.tasks TaskType)
-           (com.netflix.conductor.common.metadata.workflow WorkflowDef)
-           (com.netflix.conductor.common.metadata.workflow WorkflowTask))
+  (:import (io.orkes.conductor.client.http OrkesMetadataClient))
   (:require [clojure.tools.logging :as log]
             [conductor.mapper-utils :as mapperutils]
             [conductor.metadata :as metadata]))
@@ -104,44 +99,45 @@
       (metadata-client)
       (update-task-definition-with-client task-definition)))
 
-(defn get-task-def-with-client [client task-ref]
+(defn get-task-def-with-client
+  "Takes a client and a task-name. Returns a task definition"
+  [client task-ref]
   (mapperutils/java-map->clj (.getTaskDef client task-ref) ))
 
-(defn get-task-def [options task-def]
+(defn get-task-def
+  "Takes options and a task-definition name. Returns the task definition"
 [options task-def]
-  (-> options
-      (metadata-client)
+  (-> (metadata-client options)
       (get-task-def-with-client task-def)))
 
 
-(defn unregister-task-with-client [client task-ref]
+(defn unregister-task-with-client
+  "Takes a client and a task-name. Unregisters the task. Returns nil"
+  [client task-ref]
   (.unregisterTaskDef client task-ref))
 
 (defn unregister-task
+  "Takes an options map and a task name. Unregisters the task. Returns nil"
 [options task-ref]
   (-> options
       (metadata-client)
       (unregister-task-with-client task-ref)))
 
 (comment
-(def options {
-              :app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d"
-              :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean"
-              :url "http://localhost:8080/api/"
-              })
-(def wf (get-workflow-def options "simple_wf" 1) )
+  (def options {
+                :app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d"
+                :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean"
+                :url "http://localhost:8080/api/"
+                })
+  (def wf (get-workflow-def options "simple_wf" 1) )
 
-(:tasks wf)
-(register-workflow-def options (assoc wf :version 29))
+  (:tasks wf)
+  (register-workflow-def options (assoc wf :version 29))
 
-(unregister-workflow-def options "exclusive_join" 1)
+  (unregister-workflow-def options "exclusive_join" 1)
 
-(def some-task (get-task-def options "cool_clj_task_b") )
+  (def some-task (get-task-def options "cool_clj_task_b") )
 
-(update-task-definition options (assoc some-task :owner-email "othermaila@mail.com") )
+  (update-task-definition options (assoc some-task :owner-email "othermaila@mail.com") )
 
-(unregister-task options "cool_clj_task_b")
-
-
-)
-
+  (unregister-task options "cool_clj_task_b"))
