@@ -167,9 +167,10 @@
                                                         :timeout-policy :alert-only
                                                         })))
     )
+
   (testing  "Can create a workflow with exclusive-join"
-    (is (= nil (metadata/register-workflow-def options exclusive-join-workflow)))
-    )
+    (is (= nil (metadata/register-workflow-def options exclusive-join-workflow))))
+
   (testing "Can create a workflow with loop and decision"
     (is (= nil (metadata/register-workflow-def options {
                                                         :name "port_in_wf"
@@ -281,9 +282,13 @@
         )
       (testing "Should be able to unregister task"
         (is (nil? (metadata/unregister-task options task-name)))
-        ))))
+        )))
+        (testing "Should be able to update an exisiting workflow"
+        (is (nil? (metadata/update-workflows-def options [(assoc exclusive-join-workflow :version (inc (:version exclusive-join-workflow)))]))))
+  )
 
 (comment
+
 
 (metadata/register-workflow-def options {
                                                         :name "wf_to_wait"
