@@ -196,14 +196,14 @@
    (workflow-client options)
    (retry-last-failed-task-with-client workflow-id)))
 
-(defn reset-callbacks-for-in-progress-tasks-with-client
-  [client workflow-id]
-  (.resetCallbacksForInProgressTasks client workflow-id))
+;; (defn reset-callbacks-for-in-progress-tasks-with-client
+;;   [client workflow-id]
+;;   (.resetCallbacksForInProgressTasks client workflow-id))
 
-(defn reset-callbacks-for-in-progress-tasks
-  [options workflow-id]
-  (-> (workflow-client options)
-      (reset-callbacks-for-in-progress-tasks workflow-id)))
+;; (defn reset-callbacks-for-in-progress-tasks
+;;   [options workflow-id]
+;;   (-> (workflow-client options)
+;;       (reset-callbacks-for-in-progress-tasks workflow-id)))
 
 (defn search-with-client
   [client query]
