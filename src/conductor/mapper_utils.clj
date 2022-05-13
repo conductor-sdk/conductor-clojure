@@ -11,14 +11,7 @@
 ;; */
 (ns conductor.mapper-utils
   (:import
-           (com.netflix.conductor.common.metadata.tasks TaskDef)
-           (com.netflix.conductor.common.metadata.tasks TaskType)
-           (com.netflix.conductor.common.metadata.workflow
-            WorkflowTask
-            WorkflowDef
-            WorkflowDef$TimeoutPolicy
-            StartWorkflowRequest
-            RerunWorkflowRequest)
+           (com.netflix.conductor.common.metadata.workflow WorkflowDef$TimeoutPolicy)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
            (com.netflix.conductor.client.worker Worker))
 
@@ -63,23 +56,26 @@
   java.lang.Object
   (->clj [o] o)
 
-  com.netflix.conductor.common.run.Workflow
-  (->clj [o] (kebab-all-map-keys o))
+  ;; com.netflix.conductor.common.run.Workflow
+  ;; (->clj [o] (kebab-all-map-keys o))
 
-  com.netflix.conductor.common.metadata.tasks.TaskDef
-  (->clj [o] (kebab-all-map-keys o))
+  ;; com.netflix.conductor.common.metadata.tasks.TaskDef
+  ;; (->clj [o] (kebab-all-map-keys o))
 
-  com.netflix.conductor.common.metadata.workflow.WorkflowDef
-  (->clj [o](kebab-all-map-keys o))
+  ;; com.netflix.conductor.common.metadata.workflow.WorkflowDef
+  ;; (->clj [o](kebab-all-map-keys o))
 
-  com.netflix.conductor.common.model.BulkResponse
-  (->clj [o](kebab-all-map-keys o))
+  ;; com.netflix.conductor.common.model.BulkResponse
+  ;; (->clj [o](kebab-all-map-keys o))
 
-  com.netflix.conductor.common.run.WorkflowSummary
-  (->clj [o](kebab-all-map-keys o))
+  ;; com.netflix.conductor.common.run.WorkflowSummary
+  ;; (->clj [o](kebab-all-map-keys o))
 
-  com.netflix.conductor.common.run.SearchResult
-  (->clj [o](kebab-all-map-keys o))
+  ;; com.netflix.conductor.common.run.SearchResult
+  ;; (->clj [o](kebab-all-map-keys o))
+
+  ;; com.netflix.conductor.common.metadata.tasks.Task
+  ;; (->clj [o](kebab-all-map-keys o))
 
   nil
   (->clj [_] nil))
@@ -89,47 +85,47 @@
   (->clj m))
 
 
-(defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
-  (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
+;; (defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
+;;   (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
 
 
-(defprotocol TaskTypeEnum
-  (->task-type [tp] ))
+;; (defprotocol TaskTypeEnum
+;;   (->task-type [tp] ))
 
-(extend-protocol TaskTypeEnum
-  String
-  (->task-type [tp] (TaskType/valueOf tp) )
-  clojure.lang.Keyword
-  (->task-type [tp] (->task-type (kebab->capitalizedash (name tp)))))
+;; (extend-protocol TaskTypeEnum
+;;   String
+;;   (->task-type [tp] (TaskType/valueOf tp) )
+;;   clojure.lang.Keyword
+;;   (->task-type [tp] (->task-type (kebab->capitalizedash (name tp)))))
 
 
-(defn clj-task-type->TaskType [type]
-(->task-type type))
+;; (defn clj-task-type->TaskType [type]
+;; (->task-type type))
 
-(defn clj-workflow-task->WorkflowTask [{:keys [
-                                               name task-reference-name description
-                                               input-parameters type fork-tasks join-on
-                                               decision-cases default-case loop-condition
-                                               loop-over dynamic-fork-tasks-input-param-name dynamic-fork-tasks-param
-                                               dynamic-task-name-param async-complete case-value-param
-                                               ]}]
-  (doto (WorkflowTask.)
-    (.setName name)
-    (.setTaskReferenceName task-reference-name)
-    (.setDescription description)
-    (.setInputParameters input-parameters)
-    (.setType (.name (clj-task-type->TaskType type) ))
-    (#(when fork-tasks (.setForkTasks % (map (fn [inner] (map clj-workflow-task->WorkflowTask inner)) fork-tasks))))
-    (#(when join-on (.setJoinOn % join-on)))
-    (#(when decision-cases (.setDecisionCases % (update-vals decision-cases (fn [dtasks] (map clj-workflow-task->WorkflowTask dtasks))))))
-    (#(when default-case (.setDefaultCase % (map clj-workflow-task->WorkflowTask default-case))))
-    (#(when loop-condition (.setLoopCondition % loop-condition)))
-    (#(when loop-over (.setLoopOver % (map clj-workflow-task->WorkflowTask loop-over))))
-    (#(when dynamic-fork-tasks-input-param-name (.setDynamicForkTasksInputParamName % dynamic-fork-tasks-input-param-name)))
-    (#(when dynamic-fork-tasks-param (.setDynamicForkTasksParam % dynamic-fork-tasks-param)))
-    (#(when dynamic-task-name-param (.setDynamicTaskNameParam % dynamic-task-name-param)))
-    (#(when async-complete (.setAsyncComplete % async-complete)))
-    (#(when case-value-param (.setCaseValueParam % case-value-param)))))
+;; (defn clj-workflow-task->WorkflowTask [{:keys [
+;;                                                name task-reference-name description
+;;                                                input-parameters type fork-tasks join-on
+;;                                                decision-cases default-case loop-condition
+;;                                                loop-over dynamic-fork-tasks-input-param-name dynamic-fork-tasks-param
+;;                                                dynamic-task-name-param async-complete case-value-param
+;;                                                ]}]
+;;   (doto (WorkflowTask.)
+;;     (.setName name)
+;;     (.setTaskReferenceName task-reference-name)
+;;     (.setDescription description)
+;;     (.setInputParameters input-parameters)
+;;     (.setType (.name (clj-task-type->TaskType type) ))
+;;     (#(when fork-tasks (.setForkTasks % (map (fn [inner] (map clj-workflow-task->WorkflowTask inner)) fork-tasks))))
+;;     (#(when join-on (.setJoinOn % join-on)))
+;;     (#(when decision-cases (.setDecisionCases % (update-vals decision-cases (fn [dtasks] (map clj-workflow-task->WorkflowTask dtasks))))))
+;;     (#(when default-case (.setDefaultCase % (map clj-workflow-task->WorkflowTask default-case))))
+;;     (#(when loop-condition (.setLoopCondition % loop-condition)))
+;;     (#(when loop-over (.setLoopOver % (map clj-workflow-task->WorkflowTask loop-over))))
+;;     (#(when dynamic-fork-tasks-input-param-name (.setDynamicForkTasksInputParamName % dynamic-fork-tasks-input-param-name)))
+;;     (#(when dynamic-fork-tasks-param (.setDynamicForkTasksParam % dynamic-fork-tasks-param)))
+;;     (#(when dynamic-task-name-param (.setDynamicTaskNameParam % dynamic-task-name-param)))
+;;     (#(when async-complete (.setAsyncComplete % async-complete)))
+;;     (#(when case-value-param (.setCaseValueParam % case-value-param)))))
 
 (defprotocol TimeoutPolicy
   (->timeout-policy [tp] ))
@@ -144,30 +140,30 @@
 (defn timeout-policy->TimeoutPolicy [timeout-policy]
   (->timeout-policy timeout-policy))
 
-(comment
-(timeout-policy->TimeoutPolicy "TIME_OUT_WF")
-(timeout-policy->TimeoutPolicy :time-out-wf)
-( WorkflowDef$TimeoutPolicy/valueOf "TIME_OUT_WF" )
+;; (comment
+;; (timeout-policy->TimeoutPolicy "TIME_OUT_WF")
+;; (timeout-policy->TimeoutPolicy :time-out-wf)
+;; ( WorkflowDef$TimeoutPolicy/valueOf "TIME_OUT_WF" )
 
-  )
+;;   )
 
-(defn clj-workflow->WorkflowDef
-  [{:keys [name description version tasks
-           input-parameters output-parameters schema-version
-           restartable owner-email timeout-policy timeout-seconds] :or {restartable true, timeout-policy :alert-only }}]
-  (doto (WorkflowDef.)
-    (.setName name)
-    (.setDescription description)
-    (.setVersion version)
-    (.setTasks (map clj-workflow-task->WorkflowTask tasks) )
-    (.setInputParameters input-parameters)
-    (.setOutputParameters output-parameters)
-    (.setSchemaVersion schema-version)
-    (.setRestartable restartable)
-    (.setOwnerEmail owner-email)
-    (.setTimeoutPolicy (timeout-policy->TimeoutPolicy timeout-policy))
-    (.setTimeoutSeconds timeout-seconds))
-  )
+;; (defn clj-workflow->WorkflowDef
+;;   [{:keys [name description version tasks
+;;            input-parameters output-parameters schema-version
+;;            restartable owner-email timeout-policy timeout-seconds] :or {restartable true, timeout-policy :alert-only }}]
+;;   (doto (WorkflowDef.)
+;;     (.setName name)
+;;     (.setDescription description)
+;;     (.setVersion version)
+;;     (.setTasks (map clj-workflow-task->WorkflowTask tasks) )
+;;     (.setInputParameters input-parameters)
+;;     (.setOutputParameters output-parameters)
+;;     (.setSchemaVersion schema-version)
+;;     (.setRestartable restartable)
+;;     (.setOwnerEmail owner-email)
+;;     (.setTimeoutPolicy (timeout-policy->TimeoutPolicy timeout-policy))
+;;     (.setTimeoutSeconds timeout-seconds))
+;;   )
 
 (defprotocol TaskResultStatus
   (->task-result-status [trs]))
@@ -195,22 +191,26 @@
         (.setOutputData task-result result-output-data)
         task-result))))
 
-(defn clj-start-workflow-request->StartWorkflowRequest
-  "Returns a Start workflow request"
-  [{:keys [name version correlation-id external-input-payload-storage-path
-                                                                priority input task-domain workflow-def]}]
-  (doto (StartWorkflowRequest.)
-    (.setName name)
-    (#(when version (.setVersion % (int version))))
-    (#(when correlation-id (.setCorrelationId % correlation-id)))
-    (#(when external-input-payload-storage-path (.setExternalInputPayloadStoragePath % external-input-payload-storage-path)))
-    (#(when priority (.setPriority % priority)))
-    (#(when input (.setInput % input)))
-    (#(when task-domain (.setTaskDomain % task-domain)))
-    (#(when workflow-def (.setWorkflowDef % (clj-workflow->WorkflowDef workflow-def))))))
+;; (defn clj-start-workflow-request->StartWorkflowRequest
+;;   "Returns a Start workflow request"
+;;   [{:keys [name version correlation-id external-input-payload-storage-path
+;;                                                                 priority input task-domain workflow-def]}]
+;;   (doto (StartWorkflowRequest.)
+;;     (.setName name)
+;;     (#(when version (.setVersion % (int version))))
+;;     (#(when correlation-id (.setCorrelationId % correlation-id)))
+;;     (#(when external-input-payload-storage-path (.setExternalInputPayloadStoragePath % external-input-payload-storage-path)))
+;;     (#(when priority (.setPriority % priority)))
+;;     (#(when input (.setInput % input)))
+;;     (#(when task-domain (.setTaskDomain % task-domain)))
+;;     (#(when workflow-def (.setWorkflowDef % (clj-workflow->WorkflowDef workflow-def))))))
 
-(defn clj-rerun-workflow-request->RerunWorkflowRequest [rerun-workflow-request]
-  (-> (j/to-java RerunWorkflowRequest (update-keys rerun-workflow-request kebab->camel))))
+;; (defn clj-rerun-workflow-request->RerunWorkflowRequest [rerun-workflow-request]
+;;   (-> (j/to-java RerunWorkflowRequest (update-keys rerun-workflow-request kebab->camel))))
+
+;; (defn clj-task-result->TaskResult [task-result]
+;;   (-> (j/to-java TaskResult (update-keys task-result kebab->camel))))
+
 
 
 ;; (comment

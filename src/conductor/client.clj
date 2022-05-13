@@ -10,14 +10,11 @@
 ;; * specific language governing permissions and limitations under the License.
 ;; */
 (ns conductor.client
-  (:import (com.netflix.conductor.client.worker Worker)
-           (io.orkes.conductor.client.http OrkesTaskClient OrkesWorkflowClient)
-           (com.netflix.conductor.client.automator TaskRunnerConfigurer$Builder)
-           (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status))
-
+  (:import
+           (io.orkes.conductor.client.http OrkesTaskClient)
+           (com.netflix.conductor.client.automator TaskRunnerConfigurer$Builder))
   (:require [clojure.tools.logging :as log]
-            [conductor.mapper-utils :as mapperutils]
-            [conductor.metadata :as metadata]))
+            [conductor.mapper-utils :as mapperutils]))
 
 (defn task-client
   "Returns an instance of TaskClient. when app-key and app-secret are provided
