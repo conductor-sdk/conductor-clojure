@@ -9,12 +9,12 @@
 ;; * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 ;; * specific language governing permissions and limitations under the License.
 ;; */
-(ns conductor.client
+(ns io.orkes.client
   (:import
            (io.orkes.conductor.client.http OrkesTaskClient)
            (com.netflix.conductor.client.automator TaskRunnerConfigurer$Builder))
   (:require [clojure.tools.logging :as log]
-            [conductor.mapper-utils :as mapperutils]))
+            [io.orkes.mapper-utils :as mapperutils]))
 
 (defn task-client
   "Returns an instance of TaskClient. when app-key and app-secret are provided

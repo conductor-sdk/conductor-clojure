@@ -9,7 +9,7 @@
 ;; * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 ;; * specific language governing permissions and limitations under the License.
 ;; */
-(ns conductor.mapper-utils
+(ns io.orkes.mapper-utils
   (:import
            (com.netflix.conductor.common.metadata.workflow WorkflowDef$TimeoutPolicy)
            (com.netflix.conductor.common.metadata.tasks TaskResult TaskResult$Status)
@@ -56,76 +56,12 @@
   java.lang.Object
   (->clj [o] o)
 
-  ;; com.netflix.conductor.common.run.Workflow
-  ;; (->clj [o] (kebab-all-map-keys o))
-
-  ;; com.netflix.conductor.common.metadata.tasks.TaskDef
-  ;; (->clj [o] (kebab-all-map-keys o))
-
-  ;; com.netflix.conductor.common.metadata.workflow.WorkflowDef
-  ;; (->clj [o](kebab-all-map-keys o))
-
-  ;; com.netflix.conductor.common.model.BulkResponse
-  ;; (->clj [o](kebab-all-map-keys o))
-
-  ;; com.netflix.conductor.common.run.WorkflowSummary
-  ;; (->clj [o](kebab-all-map-keys o))
-
-  ;; com.netflix.conductor.common.run.SearchResult
-  ;; (->clj [o](kebab-all-map-keys o))
-
-  ;; com.netflix.conductor.common.metadata.tasks.Task
-  ;; (->clj [o](kebab-all-map-keys o))
-
   nil
   (->clj [_] nil))
 
 (defn java-map->clj
   [m]
   (->clj m))
-
-
-;; (defn clj-task->TaskDef [{:keys [name description owner-email retry-count timeout-seconds response-timeout-seconds]}]
-;;   (TaskDef. name description owner-email retry-count timeout-seconds response-timeout-seconds))
-
-
-;; (defprotocol TaskTypeEnum
-;;   (->task-type [tp] ))
-
-;; (extend-protocol TaskTypeEnum
-;;   String
-;;   (->task-type [tp] (TaskType/valueOf tp) )
-;;   clojure.lang.Keyword
-;;   (->task-type [tp] (->task-type (kebab->capitalizedash (name tp)))))
-
-
-;; (defn clj-task-type->TaskType [type]
-;; (->task-type type))
-
-;; (defn clj-workflow-task->WorkflowTask [{:keys [
-;;                                                name task-reference-name description
-;;                                                input-parameters type fork-tasks join-on
-;;                                                decision-cases default-case loop-condition
-;;                                                loop-over dynamic-fork-tasks-input-param-name dynamic-fork-tasks-param
-;;                                                dynamic-task-name-param async-complete case-value-param
-;;                                                ]}]
-;;   (doto (WorkflowTask.)
-;;     (.setName name)
-;;     (.setTaskReferenceName task-reference-name)
-;;     (.setDescription description)
-;;     (.setInputParameters input-parameters)
-;;     (.setType (.name (clj-task-type->TaskType type) ))
-;;     (#(when fork-tasks (.setForkTasks % (map (fn [inner] (map clj-workflow-task->WorkflowTask inner)) fork-tasks))))
-;;     (#(when join-on (.setJoinOn % join-on)))
-;;     (#(when decision-cases (.setDecisionCases % (update-vals decision-cases (fn [dtasks] (map clj-workflow-task->WorkflowTask dtasks))))))
-;;     (#(when default-case (.setDefaultCase % (map clj-workflow-task->WorkflowTask default-case))))
-;;     (#(when loop-condition (.setLoopCondition % loop-condition)))
-;;     (#(when loop-over (.setLoopOver % (map clj-workflow-task->WorkflowTask loop-over))))
-;;     (#(when dynamic-fork-tasks-input-param-name (.setDynamicForkTasksInputParamName % dynamic-fork-tasks-input-param-name)))
-;;     (#(when dynamic-fork-tasks-param (.setDynamicForkTasksParam % dynamic-fork-tasks-param)))
-;;     (#(when dynamic-task-name-param (.setDynamicTaskNameParam % dynamic-task-name-param)))
-;;     (#(when async-complete (.setAsyncComplete % async-complete)))
-;;     (#(when case-value-param (.setCaseValueParam % case-value-param)))))
 
 (defprotocol TimeoutPolicy
   (->timeout-policy [tp] ))

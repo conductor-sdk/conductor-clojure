@@ -12,8 +12,8 @@
 ;; express or implied. See the License for the
 ;; * specific language governing permissions and limitations under the License.
 ;; */
-(ns conductor.workflow-resource
-  (:require [conductor.api-client :refer [generic-client]]
+(ns io.orkes.workflow-resource
+  (:require [io.orkes.api-client :refer [generic-client]]
             [clojure.tools.logging :as log]
             [clojure.walk :as walk]))
 
@@ -244,6 +244,7 @@
                                                                                          "test" "something"
                                                                                          }} )
          (restart-workflow options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" true)
+         (retry-last-failed-task options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" true )
 
 
 

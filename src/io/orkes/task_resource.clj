@@ -14,8 +14,8 @@
 ;; express or implied. See the License for the
 ;; * specific language governing permissions and limitations under the License.
 ;; */
-(ns conductor.task-resource
-  (:require [conductor.api-client :refer [generic-client]]
+(ns io.orkes.task-resource
+  (:require [io.orkes.api-client :refer [generic-client]]
             [clojure.tools.logging :as log]
             [clojure.walk :as walk]))
 

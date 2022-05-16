@@ -1,4 +1,4 @@
-(ns conductor.api-client
+(ns io.orkes.api-client
   (:require [cheshire.core :as json]
             [clojure.tools.logging :as log]
             [org.httpkit.client :as http]))

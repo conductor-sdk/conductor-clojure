@@ -1,4 +1,4 @@
-(ns conductor.utils
+(ns io.orkes.utils
   (:require [clojure.spec.alpha :as s]))
 
 (s/def :task/name string?)

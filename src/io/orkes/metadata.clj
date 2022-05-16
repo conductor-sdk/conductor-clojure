@@ -12,10 +12,9 @@
 ;; express or implied. See the License for the
 ;; * specific language governing permissions and limitations under the License.
 ;; */
-(ns conductor.metadata
-  (:require [conductor.api-client :refer [generic-client]]
-            [cheshire.core :as json]
-            [conductor.metadata :as metadata]))
+(ns io.orkes.metadata
+  (:require [io.orkes.api-client :refer [generic-client]]
+            [cheshire.core :as json]))
 
 (def authorization-header-key "X-AUTHORIZATION")
 (def json-headers
