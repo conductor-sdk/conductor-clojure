@@ -2,30 +2,85 @@
   (:require [clojure.spec.alpha :as s]))
 
 (s/def :task/name string?)
-(s/def :task/task-reference-name string?)
-(s/def :task/input-parameters map?)
-(s/def :task/fork-tasks list?) ;; TODO it has to be a list of list of tasks
-(s/def :task/join-on list?);; TODO list of strings with no spaces
-(s/def :task/loop-condition string?);; TODO non empty string
-(s/def :task/loop-over list?);; TODO list of tasks
-(s/def :task/decision-cases map?)
-(s/def :task/default-case list?)
-(s/def :task/evaluator-type string?);;TODO non empty string
+(s/def :task/taskReferenceName string?)
+(s/def :task/inputParameters map?)
+(s/def :task/forkTasks list?) ;; TODO it has to be a list of list of tasks
+(s/def :task/joinOn list?);; TODO list of strings with no spaces
+(s/def :task/loopCondition string?);; TODO non empty string
+(s/def :task/loopOver list?);; TODO list of tasks
+(s/def :task/decisionCases map?)
+(s/def :task/defaultCase list?)
+(s/def :task/evaluatorType string?);;TODO non empty string
 (s/def :task/expression string?);; TODO non empty
+(s/def :task/type string?);; TODO non empty
+(s/def :task/sink string?)
+(s/def :task/dynamicForkTasksParam string?)
+(s/def :task/dynamicForkTasksInputParamName string?)
+(s/def :task/subWorkflowParam map?)
 
 (s/def :task/simple-task
-  (s/keys :req [:task/name :task/task-reference-name :task/input-parameters]
+  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type]
           :opt []))
 
 (s/def :task/fork-join
-  (s/keys :req [:task/name :task/task-reference-name :task/input-parameters :task/fork-tasks]
+  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/forkTasks :task/type]
           :opt []))
 
-(s/def :task/simple-task
-  (s/keys :req [:task/name :task/task-reference-name :task/input-parameters]
+(s/def :task/do-while-schema
+  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/loopOver :task/loopCondition]
           :opt []))
 
+(s/def :task/event-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/sink]
+          :opt []))
 
+(s/def :task/join-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/joinOn]
+          :opt []))
+
+(s/def :task/wait-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+          :opt []))
+
+(s/def :task/fork-join-dynamic-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters :task/dynamicForkTasksParam :task/dynamicForkTasksInputParamName]
+          :opt []))
+
+(s/def :task/dynamic-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+          :opt []))
+
+(s/def :task/inline-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+          :opt []))
+
+(s/def :task/switch-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/evaulatorType :task/expression :task/decisionCases :task/defaultCase]
+          :opt []))
+
+(s/def :task/kafka-request-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+          :opt []))
+
+(s/def :task/http-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+          :opt []))
+
+(s/def :task/json-jq-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+          :opt []))
+
+(s/def :task/terminate-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+          :opt []))
+
+(s/def :task/set-variable-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+          :opt []))
+
+(s/def :task/sub-workflow-param-task
+  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters :task/subWorkflowParam]
+          :opt []))
 
 (defn- name-task-reference
   [task-name]
@@ -41,7 +96,7 @@
 (defn simple-task
   [{task-name :name, :as task-properties}]
   (generic-task task-name
-                {:type :simple :input-parameters {}}
+                {:type "SIMPLE" :input-parameters {}}
                 task-properties :task/simple-task))
 
 (defn fork-join
