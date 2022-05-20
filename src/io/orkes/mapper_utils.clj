@@ -16,8 +16,9 @@
            (com.netflix.conductor.client.worker Worker))
 
   (:require [clojure.string :as string]
-            [clojure.java.data :as j]
-            [clojure.walk :as w]))
+            ;; [clojure.java.data :as j]
+            ;; [clojure.walk :as w]
+            ))
 
 (defn camel->kebab [k]
   (->> (string/split (name k) #"(?<=[a-z])(?=[A-Z])")
@@ -35,10 +36,10 @@
   (-> (string/upper-case w)
        (string/replace #"-" "_")))
 
-(defn kebab-all-map-keys [o]
-  (w/postwalk
-              (fn [s] (if (keyword? s)(camel->kebab s)s))
-              (j/from-java-deep o {:exceptions {:return true}}) ))
+;; (defn kebab-all-map-keys [o]
+;;   (w/postwalk
+;;               (fn [s] (if (keyword? s)(camel->kebab s)s))
+;;               (j/from-java-deep o {:exceptions {:return true}}) ))
 
 (defprotocol MapToClojure
   (->clj [o]))
