@@ -21,7 +21,7 @@
 
 (defn start-fake-server
   []
-  (reset! test-runner-instance (doto (WorkflowTestRunner. 8096 "3.5.2")
+  (reset! test-runner-instance (doto (WorkflowTestRunner. 8096 "3.8.0")
     (.init "com.netflix.conductor.testing.workflows")) ))
 
 (defn stop-fake-server []
@@ -37,12 +37,6 @@
 (def options {
               :url  "http://localhost:8096/api/"
               } )
-
-
-
-
-
-
 
 (deftest workflow-creation
   (def cool-b-task {
