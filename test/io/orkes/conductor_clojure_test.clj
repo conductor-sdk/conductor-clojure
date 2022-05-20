@@ -14,20 +14,34 @@
             [io.orkes.client :refer :all]
             [io.orkes.metadata :as metadata]
             [io.orkes.workflow-resource :as wresource]
-            ;; [io.orkes.utils :as tools]
             )
-  ;; (:import (com.netflix.conductor.sdk.testing WorkflowTestRunner )
+            (:import (com.netflix.conductor.sdk.testing WorkflowTestRunner)))
 
-  ;;          )
-  )
+(def test-runner-instance (atom {}))
+
+(defn start-fake-server
+  []
+  (reset! test-runner-instance (doto (WorkflowTestRunner. 8096 "3.5.2")
+    (.init "com.netflix.conductor.testing.workflows")) ))
+
+(defn stop-fake-server []
+  (.shutdown @test-runner-instance))
+
+(defn test-fixture [f]
+  (start-fake-server)
+  (f)
+  (stop-fake-server))
+
+(use-fixtures :once test-fixture)
+
 (def options {
-              :url  "http://localhost:8080/api/"
+              :url  "http://localhost:8096/api/"
               } )
 
-;; (comment
-;;   (WorkflowTestRunner. 12345 "3.8.0")
 
-;;   )
+
+
+
 
 
 (deftest workflow-creation
@@ -207,6 +221,9 @@
                      options
                      [(assoc exclusive-join-workflow
                         :version (inc (:version exclusive-join-workflow)))]))))
+  )
+(comment
+
   )
 
 (comment
