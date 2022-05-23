@@ -20,7 +20,7 @@ https://clojars.org/io.orkes/conductor-clojure
 
 ``` clojure
 (ns some.namespace 
-    (:require [conductor.metadata :as metadata])
+    (:require [io.orkes.metadata :as metadata])
 
     ;; Will Create a task. returns nil
     (metadata/register-tasks options [{
@@ -37,7 +37,7 @@ https://clojars.org/io.orkes/conductor-clojure
 
 ``` clojure
 (ns some.namespace 
-    (:require [conductor.metadata :as metadata])
+    (:require [io.orkes.metadata :as metadata])
 
 ;; Will Register a workflow that uses the above task returns nil
 (metadata/register-workflow-def options {
@@ -168,7 +168,7 @@ Takes the option map and a list/vector of tasks to register. on success it will 
                                                         :restartable true
                                                         :ownerEmail "mail@yahoo.com"
                                                         :timeoutSeconds 0
-                                                        :timeoutPolicy :alert-only
+                                                        :timeoutPolicy "ALERT_ONLY"
                                                         })
 ```
 
@@ -176,7 +176,7 @@ Takes the option map and a list/vector of tasks to register. on success it will 
 ## Client namespace
 The client namespace holds the function to start a workflow and running a worker
 
-`[conductor.client :as conductor]`
+`[io.orkes.client :as conductor]`
  
 ``` clojure
 ;; Creates a worker and starts polling for work. will return an instance of Runner which can then be used to shutdown
@@ -196,7 +196,7 @@ The (runner-executor-for-workers) function will take a list of worker implementa
 it will return a TaskRunnerConfigurer instance, which you can shutdown by calling the .shutdown() java method
 
 ## Mapper-Utils namespace
-The  `[conductor.mapper-utils :as mapper-utils]` namespace holds the functions to map to java object which are mostly not necesary.
+The  `[io.orkes.mapper-utils :as mapper-utils]` namespace holds the functions to map to java object which are mostly not necesary.
 
 ### The mapper-utils/java-map->clj-map protocol
 Will map a java map to a clojure map which may come in handy for workers implementation. for example consider a worker that sums two input parameters. For a workflow defined like this :
