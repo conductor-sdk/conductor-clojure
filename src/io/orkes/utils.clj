@@ -188,7 +188,7 @@
 (defmethod flat-task :default [m] [m])
 
 
-(defn tasks-filter [coll pred]
+(defn tasks-filter [pred coll]
 (->> coll (map flat-task) flatten (filter pred) ))
 
 (comment
@@ -200,6 +200,6 @@
 (def tasks (-> (io.orkes.metadata/get-workflow-def options "Github_star_workflow" 1) :tasks ) )
 (count (map :type (flat-task (first tasks)) ) )
 (count (flatten (map #(-> % flat-task ) tasks) ) )
-(count (tasks-filter tasks #(= (:type %) "HTTP")) )
+(count (tasks-filter #(= (:type %) "HTTP") tasks) )
 )
 
