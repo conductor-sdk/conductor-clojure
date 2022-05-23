@@ -4,12 +4,12 @@
 (s/def :task/name string?)
 (s/def :task/taskReferenceName string?)
 (s/def :task/inputParameters map?)
-(s/def :task/forkTasks list?) ;; TODO it has to be a list of list of tasks
-(s/def :task/joinOn list?);; TODO list of strings with no spaces
+(s/def :task/forkTasks coll?) ;; TODO it has to be a coll of coll of tasks
+(s/def :task/joinOn coll?);; TODO coll of strings with no spaces
 (s/def :task/loopCondition string?);; TODO non empty string
-(s/def :task/loopOver list?);; TODO list of tasks
+(s/def :task/loopOver coll?);; TODO coll of tasks
 (s/def :task/decisionCases map?)
-(s/def :task/defaultCase list?)
+(s/def :task/defaultCase coll?)
 (s/def :task/evaluatorType string?);;TODO non empty string
 (s/def :task/expression string?);; TODO non empty
 (s/def :task/type string?);; TODO non empty
@@ -19,72 +19,72 @@
 (s/def :task/subWorkflowParam map?)
 
 (s/def :task/simple-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/inputParameters :task/type]
           :opt []))
 
-(s/def :task/fork-join
-  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/forkTasks :task/type]
+(s/def :task/fork-join-task
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/inputParameters :task/forkTasks :task/type]
           :opt []))
 
-(s/def :task/do-while-schema
-  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/loopOver :task/loopCondition]
+(s/def :task/do-while-task
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/loopOver :task/loopCondition]
           :opt []))
 
 (s/def :task/event-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/sink]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/sink]
           :opt []))
 
 (s/def :task/join-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/joinOn]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/inputParameters :task/type :task/joinOn]
           :opt []))
 
 (s/def :task/wait-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type]
           :opt []))
 
 (s/def :task/fork-join-dynamic-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters :task/dynamicForkTasksParam :task/dynamicForkTasksInputParamName]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/inputParameters :task/dynamicForkTasksParam :task/dynamicForkTasksInputParamName]
           :opt []))
 
 (s/def :task/dynamic-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type]
           :opt []))
 
 (s/def :task/inline-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type]
           :opt []))
 
 (s/def :task/switch-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/evaulatorType :task/expression :task/decisionCases :task/defaultCase]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/evaluatorType :task/expression :task/decisionCases :task/defaultCase]
           :opt []))
 
 (s/def :task/kafka-request-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/inputParameters]
           :opt []))
 
 (s/def :task/http-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/inputParameters]
           :opt []))
 
 (s/def :task/json-jq-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/inputParameters]
           :opt []))
 
 (s/def :task/terminate-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type]
           :opt []))
 
 (s/def :task/set-variable-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/inputParameters]
           :opt []))
 
 (s/def :task/sub-workflow-param-task
-  (s/keys :req [:task/name :task/taskReferenceName :task/type :task/inputParameters :task/subWorkflowParam]
+  (s/keys :req-un [:task/name :task/taskReferenceName :task/type :task/inputParameters :task/subWorkflowParam]
           :opt []))
 
 (defn- name-task-reference
   [task-name]
-  {:name task-name, :task-reference-name (str task-name "-ref")});; TODO replace spaces for dashes
+  {:name task-name, :taskReferenceName (str task-name "-ref")});; TODO replace spaces for dashes
 
 (defn- generic-task
   ([task-name req-props additional]
@@ -96,167 +96,110 @@
 (defn simple-task
   [{task-name :name, :as task-properties}]
   (generic-task task-name
-                {:type "SIMPLE" :input-parameters {}}
+                {:type "SIMPLE" :inputParameters {}}
                 task-properties :task/simple-task))
 
 (defn fork-join
   [{task-name :name, :as task-properties}]
-   (generic-task task-name {:type :fork-join :input-parameters {} :fork-tasks []} task-properties :task/fork-join))
+   (generic-task task-name {:type "FORK_JOIN" :inputParameters {} :forkTasks []} task-properties :task/fork-join-task))
 
 (defn join
   [{task-name :name, :as task-properties}]
-   (generic-task task-name {:type :join, :join-on []} task-properties))
+   (generic-task task-name {:type "JOIN", :joinOn []} task-properties :task/join-task))
 
 (defn fork-join-join [{task-name :name, :as task-properties}]
   (let [fork-join-task (fork-join task-properties)
         fork-tasks-names (map #(-> %
-                                   :task-reference-name)
-                              (:fork-tasks fork-join-task)
+                                   :taskReferenceName)
+                              (:forkTasks fork-join-task)
                            )]
-    [fork-join-task (join  {:name (str task-name "-join") :join-on fork-tasks-names})]))
+    [fork-join-task (join  {:name (str task-name "-join") :joinOn fork-tasks-names})]))
 
 (defn do-while
   [{task-name :name, :as task-properties}]
-   (generic-task task-name {:type :do-while,
-               :loop-condition ""
-               :input-parameters {},
-               :loop-over []}
-        task-properties))
+   (generic-task task-name {:type "DO_WHILE",
+               :loopCondition ""
+               :inputParameters {},
+               :loopOver []}
+        task-properties :task/do-while-task))
 
 (defn wait
   [{task-name :name, :as task-properties}]
-  (generic-task task-name {:type :wait} task-properties))
+  (generic-task task-name {:type "WAIT"} task-properties :task/wait-task))
 
 (defn switch
   [{task-name :name, :as task-properties}]
-  (generic-task task-name {:type :switch,
-               :input-parameters {},
-               :decision-cases {}
-               :default-case [],
-               :evaluator-type ""
-               :expression ""} task-properties))
+  (generic-task task-name {:type "SWITCH",
+               :inputParameters {},
+               :decisionCases {}
+               :defaultCase [],
+               } task-properties :task/switch-task))
 
 (defn dynamic-fork
 [{task-name :name, :as task-properties}]
   (generic-task task-name {
-                                :input-parameters {}
-                                :dynamic-fork-tasks-param ""
-                                :dynamic-fork-tasks-input-param-name ""
-                                :type :fork-join-dynamic
-                                } task-properties)
-  )
+                                :inputParameters {}
+                                :dynamicForkTasksParam ""
+                                :dynamicForkTasksInputParamName ""
+                                :type "FORK_JOIN_DYNAMIC"
+                                } task-properties :task/fork-join-dynamic-task))
 
 (defn terminate
   [{task-name :name, :as task-properties}]
   (generic-task task-name
-                {:type :terminate,
-                 :input-parameters {"terminationStatus" "COMPLETED"}}
-                task-properties))
+                {:type "TERMINATE",
+                 :inputParameters {"terminationStatus" "COMPLETED"}}
+                task-properties :task/terminate-task))
 
 
-(defmulti dilatory-task (fn [{task-type :type}] task-type))
-(defmethod dilatory-task :simple [m] (simple-task m))
+;; (defmulti dilatory-task (fn [{task-type :type}] task-type))
+;; (defmethod dilatory-task "SIMPLE" [m] (simple-task m))
 
-(defmethod dilatory-task :fork-join [m] (fork-join m))
-;; (defmethod dilatory-task :fork-join-join
-;;   [m]
-;;   (fork-join-join m))
-(defmethod dilatory-task :do-while [m] (do-while m))
-(defmethod dilatory-task :dynamic-fork [m] (wait m))
-(defmethod dilatory-task :switch [m] (switch m))
-(defmethod dilatory-task :terminate [m] (terminate m))
-(defmethod dilatory-task :wait [m] (wait m))
+;; (defmethod dilatory-task "FORK_JOIN" [m] (fork-join m))
+;; ;; (defmethod dilatory-task :fork-join-join
+;; ;;   [m]
+;; ;;   (fork-join-join m))
+;; (defmethod dilatory-task "DO_WHILE" [m] (do-while m))
+;; (defmethod dilatory-task "FORK_JOIN_DYNAMIC" [m] (wait m))
+;; (defmethod dilatory-task "SWITCH" [m] (switch m))
+;; (defmethod dilatory-task "TERMINATE" [m] (terminate m))
+;; (defmethod dilatory-task "WAIT" [m] (wait m))
+;; (defmethod dilatory-task :default [m] (println m))
 
 
 
-(defmulti task-map (fn [{task-type :type} __] task-type))
+(defmulti flat-task (fn [{task-type :type}] task-type))
 
-(defmethod task-map :default [m mfn] (mfn m))
+;; (defmethod task-map :default [m mfn] (mfn m))
 
-(defmethod task-map :fork-join
-  [m mfn]
-  (-> (mfn m)
-    (update-in [:fork-tasks]
-               #(map (fn [iv] (map (fn [im] (task-map im mfn)) iv)) %))))
+(defmethod flat-task "FORK_JOIN"
+  [m]
+  (into [m] (->> m :forkTasks flatten (map flat-task) flatten)))
 
-;; (defmethod task-map :fork-join-join
-;;   [m]
-;;   (fork-join-join m))
-(defmethod task-map :do-while
-  [m mfn]
-  (-> (mfn m)
-      (update-in [:loop-over] #(map (fn [im] (task-map im mfn)) %))))
-(defmethod task-map :switch
-  [m mfn]
-  (-> (mfn m)
-      (update-in
-        [:switch-case]
-        #(update-vals % (fn [tvals] (map (fn [im] (task-map im mfn)) tvals))))
-      (update-in
-        [:default-case]
-        #(update-vals % (fn [tvals] (map (fn [im] (task-map im mfn)) tvals))))))
+(defmethod flat-task "DO_WHILE"
+  [m]
+  (into [m] (->> m :loopOver (map flat-task) flatten)))
 
-(defn workflow
-  ([name other-properties] (-> (merge {:name name, :version 1 :tasks []} other-properties)
-                               (update-in [:tasks] #(map (fn [t] (task-map dilatory-task)) %))))
-  ([name] (workflow name {})))
+(defmethod flat-task "SWITCH"
+  [m]
+  (into [m] (->> m :decisionCases vals flatten (map flat-task) flatten))
+  )
+
+(defmethod flat-task :default [m] [m])
+
+
+(defn tasks-filter [coll pred]
+(->> coll (map flat-task) flatten (filter pred) ))
 
 (comment
-  (workflow
-  "some-wf"
-  {:version 1,
-   :tasks
-     (into []
-           (map dilatory-task
-             [{:name "loop",
-               :type :do-while,
-               :loop-over
-                 (map dilatory-task
-                   [{:name "submit-to-solid", :type :simple}
-                    {:name "loop", :type :wait}
-                    {:name "did-solid-accept",
-                     :type :switch,
-                     :switch-case
-                       {"Yes" (dilatory-task {:name "submit-acceptance",
-                                              :type :simple}),
-                        "need_more_docs" (dilatory-task {:name "need_more_docs",
-                                                         :type :simple})},
-                     :default-case [(dilatory-task {:name "solid-refejection",
-                                                    :type :terminate})]}])}]))})
-    (dilatory-task {:type :simple :name "test"})
+(def options
+    {:app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d",
+     :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean",
+     :url "http://localhost:8080/api/"})
 
-    (task-map {:name "did-solid-accept",
-                     :type :switch,
-                     :switch-case
-                       {"Yes" [{:name "submit-acceptance",
-                                              :type :simple} ],
-                        "need_more_docs" [ {:name "need_more_docs",
-                                                         :type :simple} ]},
-                     :default-case [{:name "solid-refejection",
-                                                    :type :terminate}]}
-              dilatory-task)
+(def tasks (-> (io.orkes.metadata/get-workflow-def options "Github_star_workflow" 1) :tasks ) )
+(count (map :type (flat-task (first tasks)) ) )
+(count (flatten (map #(-> % flat-task ) tasks) ) )
+(count (tasks-filter tasks #(= (:type %) "HTTP")) )
+)
 
-    (task-map {:name "loop", :type :wait} dilatory-task)
-
-(workflow
-  ""
-  {:version 1,
-   :tasks {:name "loop",
-               :type :do-while,
-               :loop-over
-                   [{:name "submit-to-solid", :type :simple}
-                    {:name "wait-for-solid-response", :type :wait}
-                    {:name "did-solid-accept",
-                     :type :switch,
-                     :switch-case
-                       {"Yes" [{:name "submit-acceptance",
-                                              :type :simple}],
-                        "need_more_docs" [{:name "need_more_docs",
-                                                         :type :simple}]},
-                     :default-case [{:name "solid-refejection",
-                                                    :type :terminate}]}]}
-     })
-
-
-
-  )
