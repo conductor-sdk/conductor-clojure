@@ -173,20 +173,21 @@ Takes the option map and a list/vector of tasks to register. on success it will 
 ```
 
 
-## Client namespace
-The client namespace holds the function to start a workflow and running a worker
+## TaskRunner namespace
+The taskrunner namespace holds the function to start a workflow and running a worker
 
-`[io.orkes.client :as conductor]`
+`[io.orkes.taskrunner :as conductor]`
  
 ``` clojure
 ;; Creates a worker and starts polling for work. will return an instance of Runner which can then be used to shutdown
-(def shutdown-fn (runner-executor-for-workers
-               (list {
+(def shutdown-fn (conductor/runner-executor-for-workers
+ options              
+(list {
                       :name "cool_clj_task"
                       :execute (fn [someData]
                                  [:completed {:message "Hi From Clj i was created programatically"}])
                       })
-               options ))
+                ))
 
 ;; Shutsdown the polling for the workers defined above
 (shutdown-fn)
