@@ -11,11 +11,15 @@
 ;; */
 (ns io.orkes.conductor-clojure-test
   (:require [clojure.test :refer :all]
-            [io.orkes.client :refer :all]
+            [io.orkes.taskrunner :refer :all]
             [io.orkes.metadata :as metadata]
             [io.orkes.workflow-resource :as wresource]
             )
-            (:import (com.netflix.conductor.sdk.testing WorkflowTestRunner)))
+            (:import (com.netflix.conductor.sdk.testing WorkflowTestRunner))
+            )
+
+(testing "test"
+  (is (= 1 1)))
 
 (def test-runner-instance (atom {}))
 
@@ -217,51 +221,59 @@
                         :version (inc (:version exclusive-join-workflow)))]))))
   )
 (comment
+(metadata/register-workflow-def options {
+                                                        :name "cool_clj_workflow_2"
+                                                        :description "created programatically from clj"
+                                                        :version 1
+                                                        :tasks [ {
+                                                                  :name "cool_clj_task_b"
+                                                                  :taskReferenceName "cool_clj_task_ref"
+                                                                  :inputParameters {}
+                                                                  :type "SIMPLE"
+                                                                  }
+                                                                {
+                                                                 :name "something",
+                                                                 :taskReferenceName "other"
+                                                                 :inputParameters {}
+                                                                 :type "FORK_JOIN"
+                                                                 :forkTasks [[
+                                                                               {
+                                                                                :name "cool_clj_task_z"
+                                                                                :taskReferenceName "cool_clj_task_z_ref"
+                                                                                :inputParameters {}
+                                                                                :type "SIMPLE"
+                                                                                }
+                                                                               ]
+                                                                              [
+                                                                               {
+                                                                                :name "cool_clj_task_x"
+                                                                                :taskReferenceName "cool_clj_task_x_ref"
+                                                                                :inputParameters {}
+                                                                                :type "SIMPLE"
+                                                                                }
+                                                                               ]
+                                                                              ]
+                                                                 }
+                                                                {
+                                                                 :name "join"
+                                                                 :type "JOIN"
+                                                                 :taskReferenceName "join_ref"
+                                                                 :joinOn [ "cool_clj_task_z", "cool_clj_task_x"]
+                                                                 }
+                                                                ]
+                                                        :inputParameters []
+                                                        :outputParameters {:message "${clj_prog_task_ref.output.:message}"}
+                                                        :schemaVersion 2
+                                                        :restartable true
+                                                        :ownerEmail "mail@yahoo.com"
+                                                        :timeoutSeconds 0
+                                                        :timeoutPolicy "ALERT_ONLY"
+                                                        })
 
   )
 
 (comment
 
-(metadata/register-workflow-def options {
-                                                        :name "wf_to_wait"
-                                                        :description "created programatically from clj"
-                                                        :version 1
-                                                        :tasks [ {
-                                                                                :name "cool_clj_task_z"
-                                                                                :task-reference-name "cool_clj_task_z_ref"
-                                                                                :input-parameters {}
-                                                                                :type :simple
-                                                                  },
-                                                                {
-                                                                                :name "cool_clj_task_x"
-                                                                                :task-reference-name "cool_clj_task_x_ref"
-                                                                                :input-parameters {}
-                                                                                :type :simple
-                                                                                }
-                                                                ]
-                                                        :input-parameters []
-                                                        :output-parameters { "message" "${cool_clj_task_x_ref.output.message}"}
-                                                        :schema-version 2
-                                                        :restartable true
-                                                        :owner-email "mail@yahoo.com"
-                                                        :timeout-seconds 0
-                                                        :timeout-policy :alert-only
-                                                        })
-
-(def instance (runner-executor-for-workers [{:name "cool_clj_task_z"
-                                             :execute (fn [d]
-                                                        (Thread/sleep 15000)
-                                                        [:completed {"message" "Something silly"}]
-                                                        )
-                                             }
-                                            {:name "cool_clj_task_x"
-                                             :execute (fn [d]
-                                                        (Thread/sleep 15000)
-                                                        [:completed {"message" "Something silly 2"}]
-                                                        )
-                                             }
-                                            ] {:url "http://localhost:12345/api/"}))
-  (.shutdown instance)
 
   (def wf-id (wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait" :correlation-id "super-cool"}) )
 
@@ -283,52 +295,14 @@
   (wresource/pause-workflow options wf-id)
 
   (wresource/resume-workflow options wf-id)
-(metadata/register-workflow-def options {
-                                                        :name "wf_to_wait_long"
-                                                        :description "created programatically from clj"
-                                                        :version 1
-                                                        :tasks [ {
-                                                                                :name "cool_clj_task_z"
-                                                                                :task-reference-name "cool_clj_task_z_ref"
-                                                                                :input-parameters {}
-                                                                                :type :simple
-                                                                  },
-                                                                {
-                                                                                :name "cool_clj_task_x"
-                                                                                :task-reference-name "cool_clj_task_x_ref"
-                                                                                :input-parameters {}
-                                                                                :type :simple
-                                                                                }
-{
-                                                                                :name "cool_clj_task_x"
-                                                                                :task-reference-name "cool_clj_task_c_ref"
-                                                                                :input-parameters {}
-                                                                                :type :simple
-                                                                                }
-{
-                                                                                :name "cool_clj_task_x"
-                                                                                :task-reference-name "cool_clj_task_b_ref"
-                                                                                :input-parameters {}
-                                                                                :type :simple
-                                                                                }
-                                                                ]
-                                                        :input-parameters []
-                                                        :output-parameters { "message" "${cool_clj_task_x_ref.output.message}"}
-                                                        :schema-version 2
-                                                        :restartable true
-                                                        :owner-email "mail@yahoo.com"
-                                                        :timeout-seconds 0
-                                                        :timeout-policy :alert-only
-                                                        })
+(def options
+           {:app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d",
+            :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean",
+            :url "http://localhost:8080/api/"})
 
     (def wf-id-long (wresource/start-workflow options {:version 1 :input {} :name "wf_to_wait_long" :correlation-id "super-cool"}) )
     (wresource/skip-task-from-workflow options wf-id-long "cool_clj_task_c_ref")
     (wresource/rerun-workflow options wf-id-long { :workflow-input {} :re-run-from-task-id "19b37b92-2e75-4c7c-81e5-25f978ebb1e7" :correlation-id "super-cool"})
     (wresource/retry-last-failed-task options "d212a1d0-293f-4ab9-9359-be33fff8d94d")
-
-  )
-
-(comment
-(metadata/get-task-def)
 
   )

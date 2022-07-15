@@ -14,21 +14,10 @@
 ;; */
 (ns io.orkes.workflow-resource
   (:require [io.orkes.api-client :refer [generic-client]]
-            [clojure.tools.logging :as log]
             [clojure.walk :as walk]))
 
 (defn workflow-client [options] (generic-client options "workflow"))
 
-;; (defn start-workflow-with-client
-;;   "Takes a client and a start-request map, and starts a workflow"
-;;   ([client wf-name options]
-;;    (client wf-name
-;;            :method :post
-;;            :query-params (-> options
-;;                              (select-keys [:version :correlationId :priority])
-;;                              walk/stringify-keys)
-;;            :body (merge {:input {}} (:body options))))
-;;   ([client wf-name] (start-workflow-with-client client wf-name {})))
 (defn start-workflow-with-client [client wf-request]
   (client "" :method :post :body wf-request))
 
@@ -213,10 +202,12 @@
            {:app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d",
             :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean",
             :url "http://localhost:8080/api/"})
+
          (start-workflow options {
                                   :name  "testing_super_workflow"
                                   :input {}
                                   })
+
          (def wf-id (start-workflow options {
                                   :name  "testing_super_workflow"
                                   :input {}

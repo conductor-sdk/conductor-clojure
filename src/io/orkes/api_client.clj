@@ -1,13 +1,10 @@
 (ns io.orkes.api-client
   (:require [cheshire.core :as json]
-            [clojure.tools.logging :as log]
             [org.httpkit.client :as http]))
-
 
 (def authorization-header-key "X-AUTHORIZATION")
 (def json-headers
   {"Content-Type" "application/json", "Accept" "application/json"})
-
 
 (defn build-token
   [app-key app-secret url]

@@ -16,7 +16,7 @@
 ;; */
 (ns io.orkes.task-resource
   (:require [io.orkes.api-client :refer [generic-client]]
-            [clojure.tools.logging :as log]
+            [clojure.string :as string]
             [clojure.walk :as walk]))
 
 (defn task-client [options] (generic-client options "tasks"))
@@ -151,7 +151,7 @@
   ([client task-type query-options]
    (client (str "poll/" task-type)
            :method :get
-           :query-params (merge {} query-options)))
+           :query-params (merge {"user" {}} query-options)))
   ([client task-type] (poll-for-task-type-with-client client task-type)))
 
 (defn poll-for-task-type
@@ -184,6 +184,11 @@
        (batch-poll-tasks-by-type-with-client task-type query-options)))
   ([options task-type] (batch-poll-tasks-by-type options task-type {})))
 
+
+;; (defn task-runner-configurer [client workers thread-count]
+
+;;   )
+
 (comment (def options
            {:app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d",
             :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean",
@@ -197,4 +202,28 @@
            (get-task-details options "a09ee9d3-c393-4ef4-98c4-e47fb4f43597"))
          (identity original-task)
          (update-task options (merge original-task {:status "IN_PROGRESS"}))
-         (batch-poll-tasks-by-type options "go_task_example" {}))
+         (batch-poll-tasks-by-type options "cool_clj_task_b" {})
+         (poll-for-task-type options "cool_clj_task_b")
+         (def cool-b-task
+           {:name "cool_clj_task_b",
+            :description "some description",
+            :ownerEmail "mail@gmail.com",
+            :retryCount 3,
+            :timeoutSeconds 300,
+            :responseTimeoutSeconds 180})
+         (def worker
+           {:name "cool_clj_task_b",
+            :execute (fn [d]
+                       ;; (Thread/sleep 1000)
+                       [:completed {"message" "Something silly"}])})
+         (def worker2
+           {:name "cool_clj_task_x",
+            :execute (fn [d]
+                       ;; (Thread/sleep 1000)
+                       (log/info "I got executed with the following params " d)
+                       [:failed {"message" "Something silly"}])})
+         (-> (apply (:execute worker) {:p 123})
+             first
+             name
+             string/upper-case)
+         (poll-for-task-type options (:name worker) {"domain" "some_domain"}))
