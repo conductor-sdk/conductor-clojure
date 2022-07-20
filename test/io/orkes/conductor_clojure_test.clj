@@ -18,9 +18,6 @@
             (:import (com.netflix.conductor.sdk.testing WorkflowTestRunner))
             )
 
-(testing "test"
-  (is (= 1 1)))
-
 (def test-runner-instance (atom {}))
 
 (defn start-fake-server
@@ -279,7 +276,6 @@
 
   (wresource/terminate-workflow options wf-id)
 
-  (wresource/get-workflows options "wf_to_wait" "super-cool" :include-closed true :include-tasks true)
 
   (wresource/delete-workflow options "bbb9d385-04f1-4e5d-8c28-24c5c616e2fe")
 
