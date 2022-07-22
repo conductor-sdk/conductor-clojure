@@ -70,7 +70,7 @@
                                      children)
         default-case-tasks (:defaultCase all-decision-cases)]
     (-> m
-        (assoc :decisionCases (dissoc all-decision-cases :defaultTask))
+        (assoc :decisionCases (dissoc all-decision-cases :defaultCase))
         (assoc :defaultCase default-case-tasks))))
 
 (defn branch? [n]
