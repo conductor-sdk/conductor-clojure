@@ -27,15 +27,19 @@
   "Takes a client a name and a version. Will fetch for workflow definition"
   ([client name version]
    (client (str "workflow/" name) :query-params {"version" version}))
-  ([client name] (get-workflow-def-using-client client name 1)))
+  ([client name] (get-workflow-def-using-client client name 1))
+  ([client] (client "workflow")))
 
 (defn get-workflow-def
   "Takes a map of options, a name and a version. Will fetch for workflow definition"
-  [options name version]
-  (-> options
-      (meta-client)
-      (get-workflow-def-using-client name version)))
-
+  ([options name version]
+   (-> options
+       (meta-client)
+       (get-workflow-def-using-client name version)))
+  ([options]
+   (-> options
+       (meta-client)
+       (get-workflow-def-using-client))))
 
 (defn register-workflow-def-using-client
   "Takes a client and a workflow definition in edn, will register a worflow in conductor"
@@ -124,9 +128,10 @@
 
 (comment
   (def options
-    {:app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d",
-     :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean",
+    {:app-key "1f8f740c-9117-4016-9cb8-c1d43ed75bb4",
+     :app-secret "zR0kkWGx17HDNhH2zlfu2IrGtATlmnyQS6FrHlDZXriSsW7M",
      :url "http://localhost:8080/api/"})
+  (count (get-workflow-def options) )
   (def cool-b-task
     {:name "cool_clj_task_n",
      :description "some description",
@@ -166,8 +171,8 @@
   (register-workflow-def options wf-sample)
   (update-workflows-def options [wf-sample])
   (json/generate-string cool-b-task)
-  (get-workflow-def options "simple_wf" 1)
-  (def wf (get-workflow-def options "simple_wf" 1))
+  (spit "/tmp/testw.edn" (with-out-str (pr (get-workflow-def options "testing_loop_iterations" 1) ) ) )
+  (def wf (get-workflow-def options "si" 1))
   (:tasks wf)
   (register-workflow-def options (assoc wf :version 29))
   (unregister-workflow-def options "cool_clj_workflow_2" 1)
