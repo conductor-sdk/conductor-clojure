@@ -196,6 +196,23 @@ The taskrunner namespace holds the function to start a workflow and running a wo
 The (runner-executor-for-workers) function will take a list of worker implementations map, and options and start pooling for work
 it will return a TaskRunnerConfigurer instance, which you can shutdown by calling the .shutdown() java method
 
+## Utils.
+Treat conductor workflows as simple tree data structures
 
+
+`[io.orkes.utils :as ut]`
+ 
+``` clojure
+;; Rename every single task to fakeName. Wil transverce the whole tree and aplly the transformation function.
+
+(ut/map-wf-tasks #(assoc % :name "fakeName")
+                                                  wf-fork-example)
+                                                  
+;; Given a workflow wf-fork-example in this case will return a new workflow without the task with the taskReferenceName "cool_clj_task_ref"
+(ut/filter-wf-tasks
+                           #(not= (:taskReferenceName %) "cool_clj_task_ref")
+                           wf-fork-example)
+               
+```
 
 
