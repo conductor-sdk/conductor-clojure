@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.orkes</groupId>
   <artifactId>conductor-clojure</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.2.0-SNAPSHOT</version>
   <name>io.orkes.conductor/conductor-clojure</name>
   <description>A conductor SDK for clojure</description>
   <url>https://github.com/conductor-sdk/conductor-clojure</url>
