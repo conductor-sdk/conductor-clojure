@@ -1,13 +1,12 @@
-# Conductor Clojure
+# Netflix Conductor SDK - Clojure
 
-Software Development Kit for Netflix Conductor, written on and providing support for Clojure
+Software Development Kit for Netflix Conductor, written on and providing support for Clojure.
 
-## Get the SDK
-https://clojars.org/io.orkes/conductor-clojure
+## [Get SDK](https://clojars.org/io.orkes/conductor-clojure)
 
 ## Quick Guide
 
-1. Create connection options
+### Create connection options
 
 ```clojure
 (def options {
@@ -16,7 +15,7 @@ https://clojars.org/io.orkes/conductor-clojure
                   :app-secret "THIS-IS-SOME-APP-SECRET" ;; Optional if using Orkes Conductor
               } )
 ```
-1. Creating a task using above options 
+### Creating a task using the above options 
 
 ``` clojure
 (ns some.namespace 
@@ -33,7 +32,7 @@ https://clojars.org/io.orkes/conductor-clojure
 )
 ```
 
-2. Creating a Workflow that uses the task 
+### Creating a Workflow that uses the above task 
 
 ``` clojure
 (ns some.namespace 
@@ -59,7 +58,7 @@ https://clojars.org/io.orkes/conductor-clojure
                                          }))
 
 ```
-3. Create and run a list of workers
+### Create and run a list of workers
 
 ``` clojure
 ;; Creates a worker and starts polling for work. will return an instance of Runner which can then be used to shutdown
@@ -71,12 +70,12 @@ https://clojars.org/io.orkes/conductor-clojure
                       })
                options ))
 
-;; Shutsdown the polling for the workers defined above
+;; Shutdown the polling for the workers defined above
 (shutdown-fn)
                
 ```
 ## Options
-Options are a map with optional paremeters
+Options are a map with optional parameters.
 ```
 (def options {
                   :url  "http://localhost:8080/api/" ;; Api url (Optional will default to "http://localhost:8080")
@@ -86,14 +85,14 @@ Options are a map with optional paremeters
 ```
 
 
-## Metadata namespace
+## Metadata Namespace
 Holds the functions to register workflows and tasks.
 
 `(:require [conductor.metadata :as metadata])`
 
-### Registering tasks
+## Registering Tasks
 
-Takes the option map and a list/vector of tasks to register. on success it will return nil
+Takes the options map and a list/vector of tasks to register. On success, it will return nil.
 
 ```clojure
 (metadata/register-tasks options [{
@@ -120,7 +119,7 @@ Takes the option map and a list/vector of tasks to register. on success it will 
                                                  ])
 ```
     
-### Registering a workspace 
+## Registering a Workspace​
 ```clojure 
 (metadata/register-workflow-def options {
                                                         :name "cool_clj_workflow_2"
@@ -133,7 +132,7 @@ Takes the option map and a list/vector of tasks to register. on success it will 
                                                                   :type "SIMPLE"
                                                                   },
                                                                 {
-                                                                 :name "someting",
+                                                                 :name "something",
                                                                  :taskReferenceName "other"
                                                                  :inputParameters {}
                                                                  :type "FORK_JOIN"
@@ -173,8 +172,8 @@ Takes the option map and a list/vector of tasks to register. on success it will 
 ```
 
 
-## TaskRunner namespace
-The taskrunner namespace holds the function to start a workflow and running a worker
+## TaskRunner Namespace​
+The taskrunner namespace holds the function to start a workflow and run a worker.
 
 `[io.orkes.taskrunner :as conductor]`
  
@@ -189,21 +188,20 @@ The taskrunner namespace holds the function to start a workflow and running a wo
                       })
                 ))
 
-;; Shutsdown the polling for the workers defined above
+;; Shutdown the polling for the workers defined above
 (shutdown-fn)
                
 ```
-The (runner-executor-for-workers) function will take a list of worker implementations map, and options and start pooling for work
-it will return a TaskRunnerConfigurer instance, which you can shutdown by calling the .shutdown() java method
+The (runner-executor-for-workers) function will take a list of worker implementations, maps, and options and start polling for work. It will return a TaskRunnerConfigurer instance, which you can shut down by calling the .shutdown() java method.
 
-## Utils.
-Treat conductor workflows as simple tree data structures
+## Utils
+Treat conductor workflows as simple tree data structures.
 
 
 `[io.orkes.utils :as ut]`
  
 ``` clojure
-;; Rename every single task to fakeName. Wil transverce the whole tree and aplly the transformation function.
+;; Rename every single task to fakeName. Wil transverse the whole tree and applies the transformation function.
 
 (ut/map-wf-tasks #(assoc % :name "fakeName")
                                                   wf-fork-example)
