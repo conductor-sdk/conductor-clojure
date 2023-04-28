@@ -90,7 +90,6 @@
        (delete-workflow-with-client workflow-id archive-workflow)))
   ([options workflow-id] (delete-workflow options workflow-id true)))
 
-
 (defn get-running-workflows-with-client
   "Takes a client,workflow-name and a version.
   Returns a list of running workflow ids"
@@ -164,6 +163,32 @@
            :query-params {"useLatestDefinitions" use-latest-definitions}))
   ([client workflow-id] (restart-workflow-with-client client workflow-id false)))
 
+(defn run-workflow-sync-with-client
+  "Executes a workflow syncronously"
+  ([client workflow-id version request-id wf-request wait-until-task-ref]
+   (client (str "execute/" workflow-id "/" version) :method :post :body wf-request :query-params {:requestId request-id :waitUntilTaskRef wait-until-task-ref}))
+  ([client workflow-id version request-id wf-request]
+   (run-workflow-sync-with-client client workflow-id version request-id wf-request nil)))
+
+(defn run-workflow-sync
+  "Executes a workflow syncronously"
+  ([options workflow-id version request-id wf-request wait-until-ref]
+   (-> (workflow-client options)
+       (run-workflow-sync-with-client workflow-id version request-id wf-request wait-until-ref)))
+  ([options workflow-id version request-id wf-request]
+   (run-workflow-sync options workflow-id version request-id wf-request nil)))
+
+(defn workflow-decide-with-client
+  "Starts the decision task for a workflow"
+  [client workflow-id]
+  (client (str "decide/" workflow-id) :method :put))
+
+(defn workflow-decide
+  "Starts the decision task for a workflow"
+  [options workflow-id]
+  (-> (workflow-client options)
+      (workflow-decide-with-client workflow-id)))
+
 (defn restart-workflow
   ([options workflow-id use-latest-definitions]
    (-> (workflow-client options)
@@ -197,24 +222,24 @@
   (-> (workflow-client options)
       (search-with-client query)))
 
-
 (comment (def options
            {:app-key "c38bf576-a208-4c4b-b6d3-bf700b8e454d",
             :app-secret "Z3YUZurKtJ3J9CqrdbRxOyL7kUqLrUGR8sdVknRUAbyGqean",
             :url "http://localhost:8080/api/"})
 
-         (start-workflow options {
-                                  :name  "testing_super_workflow"
-                                  :input {}
-                                  })
+         (run-workflow-sync options "test_sync_workflow" 1 "arequest" {})
 
-         (def wf-id (start-workflow options {
-                                  :name  "testing_super_workflow"
-                                  :input {}
-                                  :correlationId "some"
-                                  }) )
+         (start-workflow options {:name  "with_wait"
+                                  :input {}})
+         ;; => "23d56593-e5f1-11ed-840e-32f1717a6621"
+
+         (workflow-decide options  "23d56593-e5f1-11ed-840e-32f1717a6621")
+
+         (def wf-id (start-workflow options {:name  "testing_super_workflow"
+                                             :input {}
+                                             :correlationId "some"}))
          (get-workflow options wf-id)
-        (identity wf-id)
+         (identity wf-id)
          (terminate-workflow options wf-id)
 
          (get-workflows options "testing_super_workflow" "some" {:includeClosed true :includeTasks true})
@@ -222,21 +247,14 @@
         ;; Needs re-testing
          (delete-workflow options "928ab4c5-2f86-4dd2-8c37-7c781c0087d5")
 
-
          (def client (workflow-client options))
          (.getWorkflow client "8542dfe4-259b-4e65-99ca-4116a020524d" false)
 
          (get-workflow options "8542dfe4-259b-4e65-99ca-4116a020524d")
-         (get-running-workflows options "testing_super_workflow" )
+         (get-running-workflows options "testing_super_workflow")
          (pause-workflow options  "8542dfe4-259b-4e65-99ca-4116a020524d")
          (resume-workflow options  "8542dfe4-259b-4e65-99ca-4116a020524d")
          (skip-task-from-workflow options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" "create_dynamic_task_downloads_ref")
-         (rerun-workflow options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" {:workflowInput {
-                                                                                         "test" "something"
-                                                                                         }} )
+         (rerun-workflow options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" {:workflowInput {"test" "something"}})
          (restart-workflow options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" true)
-         (retry-last-failed-task options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" true )
-
-
-
-    )
+         (retry-last-failed-task options "e6cc9fbe-671b-4f42-80f9-13c1ada92db4" true))
