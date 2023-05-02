@@ -6,13 +6,17 @@
 
 (defn- execute-worker
   [{execute :execute worker-name :name} input-data]
-  (log/info "Executing worker for " worker-name (execute input-data))
-  (let [execution-result (execute input-data)
-        status (-> execution-result first name string/upper-case)
-        output-data (-> execution-result last)]
-    (log/info "Wokflow executed returned status" status)
-    {:status status
-     :outputData output-data}))
+  (try
+    (let [execution-result  (execute input-data)]
+      (log/info "Executing worker for " worker-name)
+      (log/info "Wokflow executed returned status" (:status execution-result))
+      execution-result)
+    (catch Exception e
+      (log/error "Error executing returning failed")
+      {:logs [{"taskId" (:taskId input-data)
+               "createdTime" 0
+               "log" (str  "Error running worker " (.getMessage e))}]
+       :status "FAILED"})))
 
 (defn run-poll-routine
   [f]
@@ -38,9 +42,8 @@
        client
        (merge {:workflowInstanceId (:workflowInstanceId maybe-work),
                :taskId (:taskId maybe-work),
-               :outputData (:outputData execution-result),
-               :logs [{"taskId" (:taskId maybe-work),
-                       "createdTime" 0}]}
+               :outputData {}
+               :status "COMPLETED"}
               execution-result)))
     nil))
 
@@ -85,7 +88,9 @@
            {:name "cool_clj_task_b",
             :execute (fn [d]
                        ;; (Thread/sleep 1000)
-                       [:completed (:inputData d)])})
+                       {:status "COMPLETED"
+                        :outputData (:inputData d)})})
+
          (def stop-polling-fn (runner-executer-for-workers options [worker] 1))
          (stop-polling-fn)
          ;; (def worker-result (poll-for-work options worker {}))
@@ -101,7 +106,8 @@
             :execute (fn [d]
                        ;; (Thread/sleep 1000)
                        (log/info "I got executed with the following params " d)
-                       [:failed {"message" "Something silly"}])})
+                       {:status "COMPLETED"
+                        :outputData {"message" "Something silly"}})})
          (-> (apply (:execute worker) {:p 123})
              first
              name
@@ -109,7 +115,8 @@
           ;; (worker-executor options worker)
          (def re (runner-executer-for-workers options [worker]))
          (re)
-         ;; (def interval-chan (set-interval #(worker-executor options worker)
+
+;; (def interval-chan (set-interval #(worker-executor options worker)
          ;; 1000) )
          ;; (close! interval-chan)
          ;; (def interval-chan2 (set-interval #(worker-executor options worker2)
