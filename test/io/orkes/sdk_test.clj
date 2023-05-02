@@ -46,6 +46,7 @@
               :taskReferenceName "switch-task-ref",
               :type "SWITCH",
               :inputParameters {:switchCaseValue "true"},
+              :evaluatorType "value-param"
               :expression "switchCaseValue",
               :defaultCase [],
               :decisionCases {"case1" [], "case2" []}})))

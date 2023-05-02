@@ -7,6 +7,9 @@
    :inputParameters []
    :timeoutSeconds 0})
 
+(defn with-input-parameters [t input-parameters]
+  (merge t {:inputParameters input-parameters}))
+
 (defn- b-task [task-reference-name type rest-params]
   (merge {:name task-reference-name
           :taskReferenceName task-reference-name
@@ -34,6 +37,7 @@
 (defn switch-task ([task-reference-name expression decision-cases default-case]
                    (b-task task-reference-name "SWITCH" {:inputParameters {:switchCaseValue expression}
                                                          :expression "switchCaseValue"
+                                                         :evaluatorType "value-param"
                                                          :defaultCase default-case
                                                          :decisionCases decision-cases})))
 
@@ -128,14 +132,15 @@
 ;;     :type "TERMINATE",
 ;;     :inputParameters {:terminationStatus "COMPLETED", :terminationReason nil}}
   (switch-task "switch-task-ref" "true" {"case1" [] "case2" []} [])
-;; =>
-;; {:name "switch-task-ref",
+;; => {:name "switch-task-ref",
 ;;     :taskReferenceName "switch-task-ref",
 ;;     :type "SWITCH",
 ;;     :inputParameters {:switchCaseValue "true"},
 ;;     :expression "switchCaseValue",
+;;     :evaluatorType "value-param",
 ;;     :defaultCase [],
 ;;     :decisionCases {"case1" [], "case2" []}}
+
   (subworkflow-task "sub-workflow-rf" "my-workflow" 1)
 ;; =>
 ;; {:name "sub-workflow-rf",
