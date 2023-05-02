@@ -48,14 +48,14 @@
   ([client workers thread-count filters]
    (let [shutdown-channels
          (flatten
-          (map (fn [w]
-                 (repeat thread-count
-                         (run-poll-routine
-                          #(poll-for-work-execute-worker-with-client client
-                                                                     w
-                                                                     filters))))
-               workers))]
-     (fn [] (apply close! shutdown-channels))))
+          (mapv (fn [w]
+                  (repeat thread-count
+                          (run-poll-routine
+                           #(poll-for-work-execute-worker-with-client client
+                                                                      w
+                                                                      filters))))
+                workers))]
+     (fn []  (doseq [c shutdown-channels]  (close! c)))))
   ([client workers thread-count] (runner-executer-for-workers-with-client client workers thread-count {}))
   ([client workers] (runner-executer-for-workers-with-client client workers 1 {})))
 
