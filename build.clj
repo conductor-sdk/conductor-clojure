@@ -4,9 +4,9 @@
             [org.corfield.build :as bb]))
 
 (def lib 'io.orkes/conductor-clojure)
-(def version "0.2.0")
-#_ ; alternatively, use MAJOR.MINOR.COMMITS:
-(def version (format "1.0.%s" (b/git-count-revs nil)))
+(def version "0.3.0")
+#_; alternatively, use MAJOR.MINOR.COMMITS:
+  (def version (format "1.0.%s" (b/git-count-revs nil)))
 
 (defn test "Run the tests." [opts]
   (bb/run-tests opts))

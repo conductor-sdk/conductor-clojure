@@ -20,7 +20,6 @@
 (def json-headers
   {"Content-Type" "application/json", "Accept" "application/json"})
 
-
 (defn meta-client [options] (generic-client options "metadata"))
 
 (defn get-workflow-def-using-client
@@ -41,17 +40,20 @@
        (meta-client)
        (get-workflow-def-using-client))))
 
-(defn register-workflow-def-using-client
+(defn
+  register-workflow-def-using-client
   "Takes a client and a workflow definition in edn, will register a worflow in conductor"
-  [client workflow]
-  (client "workflow" :method :post :body workflow))
+  ([client workflow overwrite]
+   (client "workflow" :method :post :body workflow :query-params {"overwrite" overwrite}))
+  ([client workflow] (register-workflow-def-using-client client workflow false)))
 
 (defn register-workflow-def
   "Takes a map of options, and an EDN defined workflow. Will register a workflow"
-  [options workflow]
-  (-> options
-      (meta-client)
-      (register-workflow-def-using-client workflow)))
+  ([options workflow overwrite]
+   (-> options
+       (meta-client)
+       (register-workflow-def-using-client workflow overwrite)))
+  ([options workflow] (register-workflow-def options workflow false)))
 
 (defn update-workflows-def-using-client
   "takes a client and a list of workflows definition in edn, will update all workflows in list"
@@ -64,7 +66,6 @@
   (-> options
       (meta-client)
       (update-workflows-def-using-client workflows)))
-
 
 (defn unregister-workflow-def-using-client
   "Takes a client a name and a version. will unregister workflow. returns nil on success"
@@ -93,7 +94,7 @@
 
 (defn update-task-definition-with-client
   [client task-definition]
-  (client "taskdefs" :method :put :body task-definition ) )
+  (client "taskdefs" :method :put :body task-definition))
 
 (defn update-task-definition
   "Takes a map of options, and a list of workflow definitions. will update every workflow on the list"
@@ -113,7 +114,6 @@
   (-> (meta-client options)
       (get-task-def-with-client task-def)))
 
-
 (defn unregister-task-with-client
   "Takes a client and a task-name. Unregisters the task. Returns nil"
   [client task-ref]
@@ -131,7 +131,7 @@
     {:app-key "1f8f740c-9117-4016-9cb8-c1d43ed75bb4",
      :app-secret "zR0kkWGx17HDNhH2zlfu2IrGtATlmnyQS6FrHlDZXriSsW7M",
      :url "http://localhost:8080/api/"})
-  (count (get-workflow-def options) )
+  (count (get-workflow-def options))
   (def cool-b-task
     {:name "cool_clj_task_n",
      :description "some description",
@@ -147,7 +147,7 @@
               :taskReferenceName "cool_clj_task_ref",
               :inputParameters {},
               :type "SIMPLE"}
-             {:name "something",
+             {:name "something_else",
               :taskReferenceName "other",
               :inputParameters {},
               :type "FORK_JOIN",
@@ -168,10 +168,10 @@
      :timeoutPolicy "ALERT_ONLY"})
 
   (register-tasks options [cool-b-task])
-  (register-workflow-def options wf-sample)
+  (register-workflow-def options wf-sample true)
   (update-workflows-def options [wf-sample])
   (json/generate-string cool-b-task)
-  (spit "/tmp/testw.edn" (with-out-str (pr (get-workflow-def options "testing_loop_iterations" 1) ) ) )
+  (spit "/tmp/testw.edn" (with-out-str (pr (get-workflow-def options "testing_loop_iterations" 1))))
   (def wf (get-workflow-def options "si" 1))
   (:tasks wf)
   (register-workflow-def options (assoc wf :version 29))
@@ -179,5 +179,4 @@
   (def some-task (get-task-def options "cool_clj_task_b"))
   (update-task-definition options
                           (assoc cool-b-task :ownerEmail "othermaila@mail.com"))
-  (unregister-task options "cool_clj_task_b")
-  )
+  (unregister-task options "cool_clj_task_b"))
