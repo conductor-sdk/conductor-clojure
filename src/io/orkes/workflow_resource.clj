@@ -16,41 +16,41 @@
   (:require [io.orkes.api-client :refer [generic-client]]
             [clojure.walk :as walk]))
 
-(defn workflow-client [options] (generic-client options "workflow"))
+;; (defn workflow-client [options] (generic-client options "workflow"))
 
 (defn start-workflow-with-client [client wf-request]
-  (client "" :method :post :body wf-request))
+  (client "workflow" :method :post :body wf-request))
 
 (defn start-workflow
   "Takes an option map and a start-request map and starts a workflow.
   Returns the id of a workflow execution"
   ([options wf-request]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (start-workflow-with-client wf-request))))
 
+;;; THIS DOES NOT WORK. PLEASE TEST
 (defn get-workflow-with-client
-  ([client workflow-id] (.getWorkflow client workflow-id true))
   ([client workflow-id include-tasks]
-   (client workflow-id
-           :method :get
-           :query-params {"includeTasks" include-tasks})))
+   (client (str "workflow/"  workflow-id) :method :get
+           :query-params {"includeTasks" include-tasks}))
+  ([client workflow-id] (get-workflow-with-client client workflow-id true)))
 
 (defn get-workflow
   "Returns a workflow execution for given workflow-id"
   [options workflow-id & {:keys [includeTasks], :or {includeTasks true}}]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (get-workflow-with-client workflow-id includeTasks)))
 
 (defn terminate-workflow-with-client
   "Takes a client a workflow-id and an optional reason. will terminate a running workflow"
   ([client workflow-id reason]
-   (client workflow-id :method :delete :query-params {"reason" reason}))
-  ([client workflow-id] (client workflow-id :method :delete)))
+   (client (str "workflow/" workflow-id) :method :delete :query-params {"reason" reason}))
+  ([client workflow-id] (client (str "workflow/" workflow-id) :method :delete)))
 
 (defn terminate-workflow
   "Terminates a running workflow. given an id and an optional reason"
   ([options workflow-id & args]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (#(apply terminate-workflow-with-client % workflow-id args)))))
 
 (defn get-workflows-with-client
@@ -59,16 +59,18 @@
   ([client wf-name correlation-id
     {:keys [includeClosed includeTasks],
      :or {includeClosed false, includeTasks false}}]
-   (client (str wf-name "/correlated/" correlation-id)
+   (client (str "workflow/" wf-name "/correlated/" correlation-id)
            :method :get
            :query-params {"includeClosed" includeClosed,
                           "includeTasks" includeTasks})))
-
+;;;
+;;;GOT HERE IN THE REFACTOR
+;;;
 (defn get-workflows
   "Takes a options, workflow-name, correlation-id and optional keyword arguments :inclide-closed and :include-tasks
   Return a list of workflow-executions"
   ([options wf-name correlation-id o-options]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (get-workflows-with-client wf-name correlation-id o-options)))
   ([options wf-name correlation-id]
    (get-workflows options wf-name correlation-id {})))
@@ -77,7 +79,7 @@
   "Takes a client,workflow-id and an optional archive-workflow boolean. Deletes the workflow execution.
   Returns nil"
   ([client workflow-id archive-workflow]
-   (client (str workflow-id "/remove")
+   (client (str "workflow/" workflow-id "/remove")
            :method :delete
            :query-params {"archiveWorkflow" archive-workflow}))
   ([client workflow-id] (delete-workflow-with-client client workflow-id true)))
@@ -86,7 +88,7 @@
   "Takes a options,workflow-id and an optional archive-workflow boolean. Deletes the workflow execution.
   Returns nil"
   ([options workflow-id archive-workflow]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (delete-workflow-with-client workflow-id archive-workflow)))
   ([options workflow-id] (delete-workflow options workflow-id true)))
 
@@ -94,7 +96,7 @@
   "Takes a client,workflow-name and a version.
   Returns a list of running workflow ids"
   ([client wf-name options]
-   (client (str "running/" wf-name)
+   (client (str "workflow/running/" wf-name)
            :method :get
            :query-params (-> (merge {:version 1} options)
                              walk/stringify-keys)))
@@ -104,7 +106,7 @@
   "Takes options, workflow-name and a version.
   Returns a list of running workflow ids"
   ([options wf-name o-options]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (get-running-workflows-with-client wf-name o-options)))
   ([options wf-name] (get-running-workflows options wf-name {})))
 
@@ -112,53 +114,53 @@
   "Takes a client and a workflow-id. Pauses the current workflow.
   Returns nil"
   [client workflow-id]
-  (client (str workflow-id "/pause") :method :put))
+  (client (str "workflow/" workflow-id "/pause") :method :put))
 
 (defn pause-workflow
   "Takes options and a workflow-id. Pauses the current workflow.
   Returns nil"
   [options workflow-id]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (pause-workflow-with-client workflow-id)))
 
 (defn resume-workflow-with-client
   "Takes a client and a workflow-id. Resumes a paused workflow.
   Returns nil"
   [client workflow-id]
-  (client (str workflow-id "/resume") :method :put))
+  (client (str "workflow/" workflow-id "/resume") :method :put))
 
 (defn resume-workflow
   "Takes options and a workflow-id. Resumes a paused workflow.
   Returns nil"
   [options workflow-id]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (resume-workflow-with-client workflow-id)))
 
 (defn skip-task-from-workflow-with-client
   "Takes a client a workflow-id and a task-reference-name. Will skip the task.
   Returns nil"
   [client workflow-id task-reference-name]
-  (client (str workflow-id "/skiptask/" task-reference-name) :method :put))
+  (client (str "workflow/" workflow-id "/skiptask/" task-reference-name) :method :put))
 
 (defn skip-task-from-workflow
   "Takes options a workflow-id and a task-reference-name. Will skip the task.
   Returns nil"
   [options workflow-id task-reference-name]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (skip-task-from-workflow-with-client workflow-id task-reference-name)))
 
 (defn rerun-workflow-with-client
   [client workflow-id rerun-req]
-  (client (str workflow-id "/rerun") :method :post :body rerun-req))
+  (client (str "workflow/" workflow-id "/rerun") :method :post :body rerun-req))
 
 (defn rerun-workflow
   [options workflow-id rerun-wf-request]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (rerun-workflow-with-client workflow-id rerun-wf-request)))
 
 (defn restart-workflow-with-client
   ([client workflow-id use-latest-definitions]
-   (client (str workflow-id "/restart")
+   (client (str "workflow/" workflow-id "/restart")
            :method :post
            :query-params {"useLatestDefinitions" use-latest-definitions}))
   ([client workflow-id] (restart-workflow-with-client client workflow-id false)))
@@ -166,14 +168,14 @@
 (defn run-workflow-sync-with-client
   "Executes a workflow syncronously"
   ([client workflow-id version request-id wf-request wait-until-task-ref]
-   (client (str "execute/" workflow-id "/" version) :method :post :body wf-request :query-params {:requestId request-id :waitUntilTaskRef wait-until-task-ref}))
+   (client (str "workflow/execute/" workflow-id "/" version) :method :post :body wf-request :query-params {:requestId request-id :waitUntilTaskRef wait-until-task-ref}))
   ([client workflow-id version request-id wf-request]
    (run-workflow-sync-with-client client workflow-id version request-id wf-request nil)))
 
 (defn run-workflow-sync
   "Executes a workflow syncronously"
   ([options workflow-id version request-id wf-request wait-until-ref]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (run-workflow-sync-with-client workflow-id version request-id wf-request wait-until-ref)))
   ([options workflow-id version request-id wf-request]
    (run-workflow-sync options workflow-id version request-id wf-request nil)))
@@ -181,23 +183,23 @@
 (defn workflow-decide-with-client
   "Starts the decision task for a workflow"
   [client workflow-id]
-  (client (str "decide/" workflow-id) :method :put))
+  (client (str "workflow/decide/" workflow-id) :method :put))
 
 (defn workflow-decide
   "Starts the decision task for a workflow"
   [options workflow-id]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (workflow-decide-with-client workflow-id)))
 
 (defn restart-workflow
   ([options workflow-id use-latest-definitions]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (restart-workflow-with-client workflow-id use-latest-definitions)))
   ([options workflow-id] (restart-workflow options workflow-id false)))
 
 (defn retry-last-failed-task-with-client
   ([client workflow-id resume-subworkflow-tasks]
-   (client (str workflow-id "/retry")
+   (client (str "workflow/" workflow-id "/retry")
            :method :post
            :query-params {"resumeSubWorkflowTasks" resume-subworkflow-tasks}))
   ([client workflow-id]
@@ -205,21 +207,21 @@
 
 (defn retry-last-failed-task
   ([options workflow-id resume-subworkflow-tasks]
-   (-> (workflow-client options)
+   (-> (generic-client options)
        (retry-last-failed-task-with-client workflow-id
                                            resume-subworkflow-tasks)))
   ([options workflow-id] (retry-last-failed-task options workflow-id)))
 
 (defn search-with-client
   [client query]
-  (client "search"
+  (client "workflow/search"
           :method :get
           :query-params (-> (merge {:start 0, :size 100, :freeText "*"}
                                    query))))
 
 (defn search
   [options query]
-  (-> (workflow-client options)
+  (-> (generic-client options)
       (search-with-client query)))
 
 (comment (def options
@@ -247,7 +249,7 @@
         ;; Needs re-testing
          (delete-workflow options "928ab4c5-2f86-4dd2-8c37-7c781c0087d5")
 
-         (def client (workflow-client options))
+         (def client (generic-client options))
          (.getWorkflow client "8542dfe4-259b-4e65-99ca-4116a020524d" false)
 
          (get-workflow options "8542dfe4-259b-4e65-99ca-4116a020524d")

@@ -115,6 +115,26 @@
           ;; (worker-executor options worker)
          (def re (runner-executer-for-workers options [worker]))
          (re)
+         (def constants
+           {:get-user-info "get_user_info"
+            :send-email "send_email"
+            :send-sms "send_sms"
+            :workflow-name "user_notifications"})
+         (defn create-workers
+           "Returns workers for the workflow"
+           []
+           [{:name (:get-user-info constants)
+             :execute (fn [data]
+                        {:status "COMPLETED"
+                         :outputData {"email" (str (get-in data [:inputData "userId"]) "@email.com")}})}
+
+            {:name (:send-email constants)
+             :execute (fn [__]
+                        {:status "COMPLETED"})}
+
+            {:name (:send-sms constants)
+             :execute (fn [__]
+                        {:status "COMPLETED"})}])
 
 ;; (def interval-chan (set-interval #(worker-executor options worker)
          ;; 1000) )

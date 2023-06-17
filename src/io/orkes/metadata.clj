@@ -20,98 +20,98 @@
 (def json-headers
   {"Content-Type" "application/json", "Accept" "application/json"})
 
-(defn meta-client [options] (generic-client options "metadata"))
+;; (defn meta-client [options] (generic-client options "metadata"))
 
 (defn get-workflow-def-using-client
   "Takes a client a name and a version. Will fetch for workflow definition"
   ([client name version]
-   (client (str "workflow/" name) :query-params {"version" version}))
+   (client (str "metadata/workflow/" name) :query-params {"version" version}))
   ([client name] (get-workflow-def-using-client client name 1))
-  ([client] (client "workflow")))
+  ([client] (client "metadata/workflow")))
 
 (defn get-workflow-def
   "Takes a map of options, a name and a version. Will fetch for workflow definition"
   ([options name version]
    (-> options
-       (meta-client)
+       (generic-client)
        (get-workflow-def-using-client name version)))
   ([options]
    (-> options
-       (meta-client)
+       (generic-client)
        (get-workflow-def-using-client))))
 
 (defn
   register-workflow-def-using-client
   "Takes a client and a workflow definition in edn, will register a worflow in conductor"
   ([client workflow overwrite]
-   (client "workflow" :method :post :body workflow :query-params {"overwrite" overwrite}))
+   (client "metadata/workflow" :method :post :body workflow :query-params {"overwrite" overwrite}))
   ([client workflow] (register-workflow-def-using-client client workflow false)))
 
 (defn register-workflow-def
   "Takes a map of options, and an EDN defined workflow. Will register a workflow"
   ([options workflow overwrite]
    (-> options
-       (meta-client)
+       (generic-client)
        (register-workflow-def-using-client workflow overwrite)))
   ([options workflow] (register-workflow-def options workflow false)))
 
 (defn update-workflows-def-using-client
   "takes a client and a list of workflows definition in edn, will update all workflows in list"
   [client workflows]
-  (client "workflow" :method :put :body workflows))
+  (client "metadata/workflow" :method :put :body workflows))
 
 (defn update-workflows-def
   "Takes a map of options, and a list of workflow definitions. will update every workflow on the list"
   [options workflows]
   (-> options
-      (meta-client)
+      (generic-client)
       (update-workflows-def-using-client workflows)))
 
 (defn unregister-workflow-def-using-client
   "Takes a client a name and a version. will unregister workflow. returns nil on success"
   [client name version]
-  (client (str "workflow/" name "/" version) :method :delete))
+  (client (str "metadata/workflow/" name "/" version) :method :delete))
 
 (defn unregister-workflow-def
   "Takes a map of options, a name and a version. will unregister workflow. returns nil on success"
   [options name version]
   (-> options
-      (meta-client)
+      (generic-client)
       (unregister-workflow-def-using-client name version)))
 
 (defn register-tasks-using-client
   "Given a client instance and a list of tasks,
   will register the task in consuctor"
   [client tasks]
-  (client "taskdefs" :method :post :body tasks))
+  (client "metadata/taskdefs" :method :post :body tasks))
 
 (defn register-tasks
   "Takes options and a list of tasks in EDN, will register the tasks in conductor"
   [options tasks]
   (-> options
-      (meta-client)
+      (generic-client)
       (register-tasks-using-client tasks)))
 
 (defn update-task-definition-with-client
   [client task-definition]
-  (client "taskdefs" :method :put :body task-definition))
+  (client "metadata/taskdefs" :method :put :body task-definition))
 
 (defn update-task-definition
   "Takes a map of options, and a list of workflow definitions. will update every workflow on the list"
   [options task-definition]
   (-> options
-      (meta-client)
+      (generic-client)
       (update-task-definition-with-client task-definition)))
 
 (defn get-task-def-with-client
   "Takes a client and a task-name. Returns a task definition"
   [client task-ref]
-  (client (str "taskdefs/" task-ref) :method :get))
+  (client (str "metadata/taskdefs/" task-ref) :method :get))
 
 (defn get-task-def
   "Takes options and a task-definition name. Returns the task definition"
   [options task-def]
-  (-> (meta-client options)
+  (-> (generic-client options)
       (get-task-def-with-client task-def)))
 
 (defn unregister-task-with-client
@@ -123,7 +123,7 @@
   "Takes an options map and a task name. Unregisters the task. Returns nil"
   [options task-ref]
   (-> options
-      (meta-client)
+      (generic-client)
       (unregister-task-with-client task-ref)))
 
 (comment
