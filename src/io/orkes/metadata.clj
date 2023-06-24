@@ -117,7 +117,7 @@
 (defn unregister-task-with-client
   "Takes a client and a task-name. Unregisters the task. Returns nil"
   [client task-ref]
-  (client (str "taskdefs/" task-ref) :method :delete))
+  (client (str "metadata/taskdefs/" task-ref) :method :delete))
 
 (defn unregister-task
   "Takes an options map and a task name. Unregisters the task. Returns nil"
