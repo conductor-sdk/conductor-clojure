@@ -1,5 +1,6 @@
 (ns io.orkes.taskrunner
   (:require [io.orkes.task-resource :as resource]
+            [io.orkes.api-client :refer [generic-client]]
             [clojure.core.async :as a :refer [alt! chan close! thread go-loop]]
             [clojure.string :as string]
             [clojure.tools.logging :as log]))
@@ -65,7 +66,7 @@
 
 (defn runner-executer-for-workers
   ([options workers thread-count filters]
-   (let [client (resource/task-client options)]
+   (let [client (generic-client options)]
      (runner-executer-for-workers-with-client client
                                               workers
                                               thread-count
