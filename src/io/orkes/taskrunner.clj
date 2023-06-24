@@ -35,7 +35,7 @@
   [client worker filters]
   (log/info "Polling for work")
   (if-some [maybe-work
-            (resource/poll-for-task-type-with-client client (:name worker) filters)]
+            (resource/poll-for-task-type-with-client client (:name worker) (merge filters (select-keys worker [:domain])))] ;; use domain provided in worker if provided
     (let [execution-result (execute-worker worker maybe-work)]
       (log/info "Running worker " worker)
       (resource/update-task-with-client
@@ -46,6 +46,7 @@
                :status "COMPLETED"}
               execution-result)))
     nil))
+
 
 (defn runner-executer-for-workers-with-client
   ([client workers thread-count filters]
