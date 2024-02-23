@@ -1,4 +1,4 @@
-# Netflix Conductor Clojure SDK
+# Conductor OSS Clojure SDK
 
 The `conductor-clojure` repository provides the client SDKs to build task workers in clojure 
 
