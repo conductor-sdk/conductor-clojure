@@ -1,6 +1,7 @@
 (ns io.orkes.api-client
   (:require [cheshire.core :as json]
-            [org.httpkit.client :as http]))
+            [org.httpkit.client :as http]
+            [clojure.string :as str]))
 
 (def authorization-header-key "X-AUTHORIZATION")
 (def json-headers
@@ -62,7 +63,7 @@
                             :headers json-headers,
                             :body (json/generate-string body),
                             :query-params query-params,
-                            :url (str url resource "/" endpoint),
+                            :url (str url resource (when (not (str/blank? endpoint)) (str "/" endpoint)))
                             :as :text}]
       (make-request
         (if app-key
