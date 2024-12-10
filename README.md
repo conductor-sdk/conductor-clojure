@@ -15,7 +15,7 @@ Building the task workers in clojure mainly consists of the following steps:
 
 ```clojure
 :deps {org.clojure/clojure {:mvn/version "1.11.0"}
-        io.orkes/conductor-clojure {:mvn/version "0.3.0"}}
+        io.orkes/conductor-clojure {:mvn/version "0.3.1"}}
 ```
 
 ## Configurations
